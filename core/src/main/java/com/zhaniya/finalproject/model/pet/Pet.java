@@ -11,6 +11,11 @@ public class Pet {
     private String mood;
     private long lastFedTime;
 
+    // 🔥 Новые параметры
+    private int intelligence;
+    private int trustLevel;
+    private int level;
+
     public Pet(String name, PetType type, PetState state) {
         this.name = name;
         this.type = type;
@@ -18,7 +23,11 @@ public class Pet {
         this.energy = 100;
         this.health = 100;
         this.mood = state.getMood();
-        this.lastFedTime = System.currentTimeMillis(); // отметка, когда питомец в последний раз ел
+        this.lastFedTime = System.currentTimeMillis();
+
+        this.intelligence = 0;
+        this.trustLevel = 0;
+        this.level = 1;
 
         TimerUtil.startPetTimer(this);
     }
@@ -36,7 +45,6 @@ public class Pet {
 
         state.handle();
     }
-
 
     public void setState(PetState state) {
         this.state = state;
@@ -79,17 +87,50 @@ public class Pet {
         this.mood = mood;
     }
 
-    public void printStats() {
-        System.out.println(name + " [" + type + "] - Энергия: " + energy +
-            ", Настроение: " + getMood() + ", Здоровье: " + health);
-    }
-
-    // 🕒 Метки времени еды
     public long getLastFedTime() {
         return lastFedTime;
     }
 
     public void updateLastFedTime() {
         this.lastFedTime = System.currentTimeMillis();
+    }
+
+    public int getIntelligence() {
+        return intelligence;
+    }
+
+    public void increaseIntelligence(int amount) {
+        this.intelligence = Math.min(100, intelligence + amount);
+        checkLevelUp();
+    }
+
+    public int getTrustLevel() {
+        return trustLevel;
+    }
+
+    public void increaseTrust(int amount) {
+        this.trustLevel = Math.min(100, trustLevel + amount);
+        checkLevelUp();
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    private void checkLevelUp() {
+        if (intelligence >= 20 && trustLevel >= 20 && level == 1) {
+            level = 2;
+            System.out.println(name + " повысил уровень до 2! 🎉");
+        } else if (intelligence >= 50 && trustLevel >= 50 && level == 2) {
+            level = 3;
+            System.out.println(name + " повысил уровень до 3! 🌟");
+        }
+        // Можно продолжить дальше
+    }
+
+    public void printStats() {
+        System.out.println(name + " [" + type + "] - Энергия: " + energy +
+            ", Настроение: " + getMood() + ", Здоровье: " + health +
+            ", Уровень: " + level + ", Интеллект: " + intelligence + ", Доверие: " + trustLevel);
     }
 }
