@@ -1,7 +1,11 @@
 package com.zhaniya.finalproject;
 
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("Tamagotchi+ is starting!");
+import com.badlogic.gdx.Game;
+import com.zhaniya.finalproject.ui.StartScreen;
+
+public class Main extends Game {
+    @Override
+    public void create() {
+        setScreen(new StartScreen(this));
     }
 }
