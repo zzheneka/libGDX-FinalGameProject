@@ -20,8 +20,10 @@ public class HappyState extends PetState {
     public void feed(Pet pet) {
         pet.setEnergy(pet.getEnergy() + 10);
         pet.setMood("Счастлив");
+        pet.updateLastFedTime(); // ✅
         System.out.println(pet.getName() + " снова счастлив и полон сил!");
     }
+
 
     @Override
     public void play(Pet pet) {

@@ -6,7 +6,7 @@ public class SickState extends PetState {
 
     public SickState(Pet pet) {
         super(pet);
-        // TimerUtil.startPetTimer(pet); // если нужно
+        TimerUtil.startPetTimer(pet);
     }
 
     @Override
@@ -20,11 +20,11 @@ public class SickState extends PetState {
     public void feed(Pet pet) {
         pet.setEnergy(pet.getEnergy() + 10);
         pet.setMood("Чувствует себя лучше");
+        pet.updateLastFedTime(); // ✅
         System.out.println(pet.getName() + " чувствует себя лучше после еды!");
-
-        // Переход в счастливое состояние
         pet.setState(new HappyState(pet));
     }
+
 
     @Override
     public void play(Pet pet) {

@@ -6,7 +6,7 @@ public class HungryState extends PetState {
 
     public HungryState(Pet pet) {
         super(pet);
-        // TimerUtil.startPetTimer(pet); // если используешь таймеры
+        TimerUtil.startPetTimer(pet);
     }
 
     @Override
@@ -20,9 +20,8 @@ public class HungryState extends PetState {
     public void feed(Pet pet) {
         pet.setEnergy(pet.getEnergy() + 20);
         pet.setMood("Насытился");
+        pet.updateLastFedTime(); // ✅
         System.out.println(pet.getName() + " сыт и полон сил!");
-
-        // 👉 переход в счастливое состояние
         pet.setState(new HappyState(pet));
     }
 

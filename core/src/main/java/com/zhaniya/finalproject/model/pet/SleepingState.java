@@ -22,8 +22,10 @@ public class SleepingState extends PetState {
     public void feed(Pet pet) {
         pet.setEnergy(pet.getEnergy() + 5);
         pet.setMood("Спит");
+        pet.updateLastFedTime(); // ✅
         System.out.println(pet.getName() + " немного поел, но продолжает спать.");
     }
+
 
     @Override
     public void play(Pet pet) {
