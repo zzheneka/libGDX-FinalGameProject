@@ -1,5 +1,4 @@
 package com.zhaniya.finalproject.model.pet;
-
 import com.zhaniya.finalproject.utils.TimerUtil;
 
 public class HappyState extends PetState {
@@ -24,7 +23,6 @@ public class HappyState extends PetState {
         System.out.println(pet.getName() + " снова счастлив и полон сил!");
     }
 
-
     @Override
     public void play(Pet pet) {
         pet.setEnergy(pet.getEnergy() - 10);
@@ -42,5 +40,10 @@ public class HappyState extends PetState {
     @Override
     public String getMood() {
         return "Счастлив";
+    }
+
+    @Override
+    public Emotion getEmotion() {
+        return Emotion.HAPPY;
     }
 }

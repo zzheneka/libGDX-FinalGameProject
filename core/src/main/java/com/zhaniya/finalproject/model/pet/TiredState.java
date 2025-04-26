@@ -6,7 +6,7 @@ public class TiredState extends PetState {
 
     public TiredState(Pet pet) {
         super(pet);
-        TimerUtil.startPetTimer(pet); // Можно оставить, если нужно
+        TimerUtil.startPetTimer(pet);
     }
 
     @Override
@@ -25,10 +25,9 @@ public class TiredState extends PetState {
     public void feed(Pet pet) {
         pet.setEnergy(pet.getEnergy() + 5);
         pet.setMood("Устал");
-        pet.updateLastFedTime(); // ✅
+        pet.updateLastFedTime();
         System.out.println(pet.getName() + " поел и немного восстановил силы.");
     }
-
 
     @Override
     public void play(Pet pet) {
@@ -48,5 +47,10 @@ public class TiredState extends PetState {
     @Override
     public String getMood() {
         return "Устал";
+    }
+
+    @Override
+    public Emotion getEmotion() {
+        return Emotion.SAD;
     }
 }

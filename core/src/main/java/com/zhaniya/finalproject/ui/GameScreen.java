@@ -4,34 +4,80 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.zhaniya.finalproject.model.pet.PetType;
+import com.zhaniya.finalproject.model.pet.*;
+
+import java.util.EnumMap;
 
 public class GameScreen implements Screen {
     private final Game game;
-    private final PetType type;
+    private final Pet pet;
     private SpriteBatch batch;
-    private Texture texture;
+    private EnumMap<Emotion, Animation<TextureRegion>> emotionAnimations;
+    private Emotion currentEmotion;
+    private float stateTime;
 
-    public GameScreen(Game game, PetType type) {
+    // HUD
+    private BitmapFont font;
+    private GlyphLayout layout;
+
+    public GameScreen(Game game, Pet pet) {
         this.game = game;
-        this.type = type;
+        this.pet = pet;
     }
 
     @Override
     public void show() {
         batch = new SpriteBatch();
-        switch (type) {
-            case DOG -> texture = new Texture("dog.png");
-            case CAT -> texture = new Texture("cat.png");
-            case DRAGON -> texture = new Texture("dragon.png");
+        emotionAnimations = new EnumMap<>(Emotion.class);
+
+        // Загрузка анимаций по эмоциям
+        emotionAnimations.put(Emotion.HAPPY, loadAnimation("dragon/happy", 0.2f));
+        emotionAnimations.put(Emotion.ANGRY, loadAnimation("dragon/angry", 0.2f));
+        emotionAnimations.put(Emotion.SAD, loadAnimation("dragon/sad", 0.2f));
+        emotionAnimations.put(Emotion.SLEEP, loadAnimation("dragon/sleep", 0.4f));
+
+        currentEmotion = pet.getState().getEmotion();
+        stateTime = 0f;
+
+        // HUD
+        font = new BitmapFont();
+        layout = new GlyphLayout();
+    }
+
+    private Animation<TextureRegion> loadAnimation(String folderPath, float frameDuration) {
+        TextureRegion[] frames = new TextureRegion[3];
+        for (int i = 0; i < 3; i++) {
+            Texture texture = new Texture(folderPath + "/frame" + (i + 1) + ".png");
+            frames[i] = new TextureRegion(texture);
         }
+        return new Animation<>(frameDuration, frames);
     }
 
     @Override
     public void render(float delta) {
         ScreenUtils.clear(1, 1, 1, 1);
+        stateTime += delta;
+
+        Emotion newEmotion = pet.getState().getEmotion();
+        if (newEmotion != currentEmotion) {
+            currentEmotion = newEmotion;
+            stateTime = 0f; // сброс анимации при смене эмоции
+        }
+
+        Animation<TextureRegion> animation = emotionAnimations.get(currentEmotion);
+        TextureRegion currentFrame = animation.getKeyFrame(stateTime, true);
+
         batch.begin();
-        batch.draw(texture, 150, 150, 150, 150);
+
+        // 🐉 Анимация эмоции
+        batch.draw(currentFrame, 150, 150, 200, 200);
+
+        // 📊 HUD панель
+        font.getData().setScale(1.5f);
+        String status = "Энергия: " + pet.getEnergy() + "\nНастроение: " + pet.getMood();
+        layout.setText(font, status);
+        font.draw(batch, layout, 20, 450);
+
         batch.end();
     }
 
@@ -39,8 +85,15 @@ public class GameScreen implements Screen {
     @Override public void pause() {}
     @Override public void resume() {}
     @Override public void hide() {}
-    @Override public void dispose() {
+
+    @Override
+    public void dispose() {
         batch.dispose();
-        texture.dispose();
+        font.dispose();
+        for (Animation<TextureRegion> anim : emotionAnimations.values()) {
+            for (TextureRegion region : anim.getKeyFrames()) {
+                region.getTexture().dispose();
+            }
+        }
     }
 }
