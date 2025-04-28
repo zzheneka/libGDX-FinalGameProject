@@ -11,7 +11,7 @@ public class Pet {
     private String mood;
     private long lastFedTime;
 
-    // 🔥 Новые параметры
+    // Новые параметры
     private int intelligence;
     private int trustLevel;
     private int level;
@@ -22,7 +22,9 @@ public class Pet {
         this.state = state;
         this.energy = 100;
         this.health = 100;
-        this.mood = state.getMood();
+
+        // ✅ Безопасная инициализация настроения
+        this.mood = (state != null) ? state.getMood() : "Нейтральный";
         this.lastFedTime = System.currentTimeMillis();
 
         this.intelligence = 0;
@@ -80,7 +82,7 @@ public class Pet {
     }
 
     public String getMood() {
-        return mood != null ? mood : state.getMood();
+        return mood != null ? mood : (state != null ? state.getMood() : "Неизвестно");
     }
 
     public void setMood(String mood) {
@@ -125,7 +127,7 @@ public class Pet {
             level = 3;
             System.out.println(name + " повысил уровень до 3! 🌟");
         }
-        // Можно продолжить дальше
+
     }
 
     public void printStats() {

@@ -20,11 +20,10 @@ public class SickState extends PetState {
     public void feed(Pet pet) {
         pet.setEnergy(pet.getEnergy() + 10);
         pet.setMood("Чувствует себя лучше");
-        pet.updateLastFedTime(); // ✅
+        pet.updateLastFedTime();
         System.out.println(pet.getName() + " чувствует себя лучше после еды!");
         pet.setState(new HappyState(pet));
     }
-
 
     @Override
     public void play(Pet pet) {
@@ -43,5 +42,10 @@ public class SickState extends PetState {
     @Override
     public String getMood() {
         return "Болен";
+    }
+
+    @Override
+    public Emotion getEmotion() {
+        return Emotion.SAD;
     }
 }
