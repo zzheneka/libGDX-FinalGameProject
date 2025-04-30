@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.zhaniya.finalproject.model.pet.Pet;
 import com.zhaniya.finalproject.model.pet.PetBuilder;
 import com.zhaniya.finalproject.model.pet.PetType;
+import jdk.internal.classfile.impl.ClassPrinterImpl;
 
 public class StartScreen implements Screen {
     private final Game game;
@@ -37,6 +38,7 @@ public class StartScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        ClassPrinterImpl.MapNodeImpl ScreenUtils;
         ScreenUtils.clear(1, 1, 1, 1);
 
         batch.begin();
