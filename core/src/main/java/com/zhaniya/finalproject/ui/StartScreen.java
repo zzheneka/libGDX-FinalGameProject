@@ -11,7 +11,6 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.zhaniya.finalproject.model.pet.Pet;
 import com.zhaniya.finalproject.model.pet.PetBuilder;
 import com.zhaniya.finalproject.model.pet.PetType;
-import jdk.internal.classfile.impl.ClassPrinterImpl;
 
 public class StartScreen implements Screen {
     private final Game game;
@@ -30,7 +29,6 @@ public class StartScreen implements Screen {
         font = new BitmapFont();
         layout = new GlyphLayout();
 
-
         dogTexture = new Texture("dog/happy/frame1.png");
         catTexture = new Texture("cat/happy/frame1.png");
         dragonTexture = new Texture("dragon/happy/frame1.png");
@@ -38,44 +36,35 @@ public class StartScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        ClassPrinterImpl.MapNodeImpl ScreenUtils;
+        // Очищаем экран
         ScreenUtils.clear(1, 1, 1, 1);
 
         batch.begin();
 
-
+        // Надпись
         font.getData().setScale(2f);
         layout.setText(font, "Choose your pet:");
-        font.draw(batch, layout, (Gdx.graphics.getWidth() - layout.width) / 2, Gdx.graphics.getHeight() - 50);
+        font.draw(batch, layout, (Gdx.graphics.getWidth() - layout.width) / 2f, Gdx.graphics.getHeight() - 50);
 
+        // Рисуем питомцев
         batch.draw(dogTexture, 100, 250, 120, 120);
         batch.draw(catTexture, 290, 250, 120, 120);
         batch.draw(dragonTexture, 480, 250, 120, 120);
 
         batch.end();
 
-
+        // Обработка нажатия
         if (Gdx.input.justTouched()) {
             int x = Gdx.input.getX();
-            int y = Gdx.graphics.getHeight() - Gdx.input.getY(); // Переворот координат по Y
-
+            int y = Gdx.graphics.getHeight() - Gdx.input.getY();
             Pet selectedPet = null;
 
-            if (x >= 100 && x <= 220 && y >= 250 && y <= 370) { // Собака
-                selectedPet = new PetBuilder()
-                    .setType(PetType.DOG)
-                    .setName("Bobik")
-                    .build();
-            } else if (x >= 290 && x <= 410 && y >= 250 && y <= 370) { // Котик
-                selectedPet = new PetBuilder()
-                    .setType(PetType.CAT)
-                    .setName("Murzik")
-                    .build();
-            } else if (x >= 480 && x <= 600 && y >= 250 && y <= 370) { // Дракон
-                selectedPet = new PetBuilder()
-                    .setType(PetType.DRAGON)
-                    .setName("Drako")
-                    .build();
+            if (x >= 100 && x <= 220 && y >= 250 && y <= 370) {
+                selectedPet = new PetBuilder().setType(PetType.DOG).setName("Bobik").build();
+            } else if (x >= 290 && x <= 410 && y >= 250 && y <= 370) {
+                selectedPet = new PetBuilder().setType(PetType.CAT).setName("Murzik").build();
+            } else if (x >= 480 && x <= 600 && y >= 250 && y <= 370) {
+                selectedPet = new PetBuilder().setType(PetType.DRAGON).setName("Drako").build();
             }
 
             if (selectedPet != null) {

@@ -37,7 +37,7 @@ public class MenuScreen implements Screen {
         ScreenUtils.clear(1, 1, 1, 1); // Белый фон
 
         batch.begin();
-        // Текст сверху
+
         font.draw(batch, "Добро пожаловать в игру!", Gdx.graphics.getWidth() / 2f - 200, Gdx.graphics.getHeight() - 100);
         // Кнопка старт
         batch.draw(startButton, startButtonBounds.x, startButtonBounds.y, startButtonBounds.width, startButtonBounds.height);
