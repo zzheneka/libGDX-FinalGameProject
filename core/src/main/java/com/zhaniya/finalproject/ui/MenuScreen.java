@@ -39,16 +39,15 @@ public class MenuScreen implements Screen {
         batch.begin();
 
         font.draw(batch, "Добро пожаловать в игру!", Gdx.graphics.getWidth() / 2f - 200, Gdx.graphics.getHeight() - 100);
-        // Кнопка старт
         batch.draw(startButton, startButtonBounds.x, startButtonBounds.y, startButtonBounds.width, startButtonBounds.height);
         batch.end();
 
         if (Gdx.input.justTouched()) {
             float x = Gdx.input.getX();
-            float y = Gdx.graphics.getHeight() - Gdx.input.getY(); // Переворот Y координаты
+            float y = Gdx.graphics.getHeight() - Gdx.input.getY();
 
             if (startButtonBounds.contains(x, y)) {
-                game.setScreen(new StartScreen(game)); // Переход на экран выбора питомца
+                game.setScreen(new StartScreen(game));
                 dispose();
             }
         }

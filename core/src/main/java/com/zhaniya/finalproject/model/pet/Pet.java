@@ -11,7 +11,6 @@ public class Pet {
     private String mood;
     private long lastFedTime;
 
-    // Новые параметры
     private int intelligence;
     private int trustLevel;
     private int level;
@@ -23,7 +22,6 @@ public class Pet {
         this.energy = 100;
         this.health = 100;
 
-        // ✅ Безопасная инициализация настроения
         this.mood = (state != null) ? state.getMood() : "Нейтральный";
         this.lastFedTime = System.currentTimeMillis();
 
