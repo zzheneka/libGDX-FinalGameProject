@@ -1,7 +1,5 @@
 package com.zhaniya.finalproject.model.pet;
-
 import com.zhaniya.finalproject.utils.TimerUtil;
-
 public class TiredState extends PetState {
 
     public TiredState(Pet pet) {

@@ -19,14 +19,12 @@ public class DragonAnimationScreen implements Screen {
     public void show() {
         batch = new SpriteBatch();
 
-        // Загружаем кадры для драгон
         TextureRegion[] frames = new TextureRegion[3];
         for (int i = 0; i < 3; i++) {
             Texture texture = new Texture(Gdx.files.internal("dragon/happy/frame" + (i + 1) + ".png"));
             frames[i] = new TextureRegion(texture);
         }
 
-        //анимация
         dragonAnimation = new Animation<>(0.25f, frames);
         stateTime = 0f;
     }

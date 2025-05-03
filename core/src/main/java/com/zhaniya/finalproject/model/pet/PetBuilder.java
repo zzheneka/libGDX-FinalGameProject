@@ -42,7 +42,6 @@ public class PetBuilder {
                 PetState state = stateClass.getConstructor(Pet.class).newInstance(pet);
                 pet.setState(state);
             } else {
-                // Если состояние не указано, ставим Happy по умолчанию
                 pet.setState(new HappyState(pet));
             }
         } catch (Exception e) {

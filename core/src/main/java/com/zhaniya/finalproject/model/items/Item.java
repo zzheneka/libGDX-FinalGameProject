@@ -2,7 +2,7 @@ package com.zhaniya.finalproject.model.items;
 
 public class Item {
     private final String name;
-    private final String type; // "food", "toy", "medicine", etc.
+    private final String type;
 
     public Item(String name, String type) {
         this.name = name;

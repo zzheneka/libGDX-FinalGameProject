@@ -36,24 +36,20 @@ public class StartScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        // Очищаем экран
         ScreenUtils.clear(1, 1, 1, 1);
 
         batch.begin();
 
-        // Надпись
         font.getData().setScale(2f);
         layout.setText(font, "Choose your pet:");
         font.draw(batch, layout, (Gdx.graphics.getWidth() - layout.width) / 2f, Gdx.graphics.getHeight() - 50);
 
-        // Рисуем питомцев
         batch.draw(dogTexture, 100, 250, 120, 120);
         batch.draw(catTexture, 290, 250, 120, 120);
         batch.draw(dragonTexture, 480, 250, 120, 120);
 
         batch.end();
 
-        // Обработка нажатия
         if (Gdx.input.justTouched()) {
             int x = Gdx.input.getX();
             int y = Gdx.graphics.getHeight() - Gdx.input.getY();
