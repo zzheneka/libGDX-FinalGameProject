@@ -20,7 +20,7 @@ public class HungryState extends PetState {
     public void feed(Pet pet) {
         pet.setEnergy(pet.getEnergy() + 20);
         pet.setMood("Насытился");
-        pet.updateLastFedTime(); // ✅
+        pet.updateLastFedTime();
         System.out.println(pet.getName() + " сыт и полон сил!");
         pet.setState(new HappyState(pet));
     }
@@ -42,5 +42,10 @@ public class HungryState extends PetState {
     @Override
     public String getMood() {
         return "Голоден";
+    }
+
+    @Override
+    public Emotion getEmotion() {
+        return Emotion.ANGRY;
     }
 }

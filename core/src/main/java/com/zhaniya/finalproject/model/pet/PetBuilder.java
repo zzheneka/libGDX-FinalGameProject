@@ -5,7 +5,7 @@ public class PetBuilder {
     private PetType type = PetType.DOG;
     private int energy = 100;
     private int health = 100;
-    private Class<? extends PetState> stateClass; // теперь не объект, а класс состояния
+    private Class<? extends PetState> stateClass;
 
     public PetBuilder setName(String name) {
         this.name = name;
@@ -41,6 +41,8 @@ public class PetBuilder {
             if (stateClass != null) {
                 PetState state = stateClass.getConstructor(Pet.class).newInstance(pet);
                 pet.setState(state);
+            } else {
+                pet.setState(new HappyState(pet));
             }
         } catch (Exception e) {
             throw new RuntimeException("Ошибка при создании состояния для питомца: " + e.getMessage());
