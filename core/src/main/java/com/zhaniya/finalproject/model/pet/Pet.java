@@ -22,9 +22,8 @@ public class Pet {
         this.state = state;
         this.energy = 100;
         this.health = 100;
-        this.mood = state.getMood();
+        this.mood = (state != null) ? state.getMood() : "Нейтральный";
         this.lastFedTime = System.currentTimeMillis();
-
         this.intelligence = 0;
         this.trustLevel = 0;
         this.level = 1;
@@ -33,22 +32,32 @@ public class Pet {
     }
 
     public void handleState() {
-        if (energy < 30 && !(state instanceof TiredState)) {
+        if (energy < 30 && !isInState(TiredState.class)) {
             setState(new TiredState(this));
             System.out.println(name + " слишком устал и переходит в состояние Устал.");
         }
 
-        if (health < 30 && !(state instanceof SickState)) {
+        if (health < 30 && !isInState(SickState.class)) {
             setState(new SickState(this));
             System.out.println(name + " заболел из-за плохого здоровья.");
         }
 
-        state.handle();
+        if (state != null) {
+            state.handle();
+        }
     }
 
-    public void setState(PetState state) {
-        this.state = state;
-        this.mood = state.getMood();
+    public void setState(PetState newState) {
+        if (this.state != null && this.state.getClass().equals(newState.getClass())) {
+            return; // Уже это состояние, не меняем
+        }
+        this.state = newState;
+        this.mood = newState.getMood();
+        System.out.println(name + " перешел в состояние: " + newState.getClass().getSimpleName());
+    }
+
+    public boolean isInState(Class<? extends PetState> stateClass) {
+        return state != null && stateClass.isInstance(state);
     }
 
     public PetState getState() {
@@ -80,7 +89,7 @@ public class Pet {
     }
 
     public String getMood() {
-        return mood != null ? mood : state.getMood();
+        return mood != null ? mood : (state != null ? state.getMood() : "Неизвестно");
     }
 
     public void setMood(String mood) {
@@ -125,12 +134,49 @@ public class Pet {
             level = 3;
             System.out.println(name + " повысил уровень до 3! 🌟");
         }
-        // Можно продолжить дальше
     }
 
     public void printStats() {
         System.out.println(name + " [" + type + "] - Энергия: " + energy +
             ", Настроение: " + getMood() + ", Здоровье: " + health +
             ", Уровень: " + level + ", Интеллект: " + intelligence + ", Доверие: " + trustLevel);
+    }
+
+    public void feed() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastFedTime < 5000) {
+            System.out.println(name + " не голоден прямо сейчас. Подожди немного.");
+            return;
+        }
+
+        energy = Math.min(100, energy + 20);
+        health = Math.min(100, health + 10);
+        updateLastFedTime();
+        System.out.println(name + " поел! Энергия: " + energy + ", Здоровье: " + health);
+        handleState();
+    }
+
+    public void play() {
+        if (energy < 10) {
+            System.out.println(name + " слишком устал для игры.");
+            return;
+        }
+
+        energy = Math.max(0, energy - 10);
+        increaseTrust(5);
+        increaseIntelligence(3);
+        System.out.println(name + " поиграл с тобой! Энергия: " + energy);
+        handleState();
+    }
+
+    public void sleep() {
+        if (energy >= 90) {
+            System.out.println(name + " не хочет спать, он полон энергии!");
+            return;
+        }
+
+        energy = Math.min(100, energy + 30);
+        System.out.println(name + " поспал и восстановил силы! Энергия: " + energy);
+        handleState();
     }
 }
