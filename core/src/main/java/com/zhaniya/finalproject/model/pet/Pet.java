@@ -2,7 +2,7 @@ package com.zhaniya.finalproject.model.pet;
 
 import com.zhaniya.finalproject.utils.TimerUtil;
 
-public class Pet {
+public class Pet implements CloneablePet {
     private String name;
     private PetType type;
     private int energy;
@@ -11,10 +11,9 @@ public class Pet {
     private String mood;
     private long lastFedTime;
 
-    // 🔥 Новые параметры
     private int intelligence;
     private int trustLevel;
-    private int level;
+    int level;
 
     public Pet(String name, PetType type, PetState state) {
         this.name = name;
@@ -28,9 +27,35 @@ public class Pet {
         this.trustLevel = 0;
         this.level = 1;
 
-        TimerUtil.startPetTimer(this);
+        TimerUtil.getInstance().start(this);
     }
 
+    @Override
+    public Pet clone() {
+        Pet copy = new Pet(this.name, this.type, null);
+        copy.setEnergy(this.energy);
+        copy.setHealth(this.health);
+        copy.setMood(this.mood);
+        copy.lastFedTime = this.lastFedTime;
+        copy.intelligence = this.intelligence;
+        copy.trustLevel = this.trustLevel;
+        copy.level = this.level;
+
+        if (this.state != null) {
+            try {
+                PetState clonedState = this.state.getClass()
+                    .getConstructor(Pet.class)
+                    .newInstance(copy);
+                copy.setState(clonedState);
+            } catch (Exception e) {
+                System.out.println("Не удалось клонировать состояние: " + e.getMessage());
+            }
+        }
+
+        return copy;
+    }
+
+    // остальная логика без изменений (feed, play, sleep и т.д.)
     public void handleState() {
         if (energy < 30 && !isInState(TiredState.class)) {
             setState(new TiredState(this));
@@ -48,9 +73,7 @@ public class Pet {
     }
 
     public void setState(PetState newState) {
-        if (this.state != null && this.state.getClass().equals(newState.getClass())) {
-            return; // Уже это состояние, не меняем
-        }
+        if (this.state != null && this.state.getClass().equals(newState.getClass())) return;
         this.state = newState;
         this.mood = newState.getMood();
         System.out.println(name + " перешел в состояние: " + newState.getClass().getSimpleName());
@@ -60,29 +83,19 @@ public class Pet {
         return state != null && stateClass.isInstance(state);
     }
 
-    public PetState getState() {
-        return state;
-    }
+    public PetState getState() { return state; }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
 
-    public PetType getType() {
-        return type;
-    }
+    public PetType getType() { return type; }
 
-    public int getEnergy() {
-        return energy;
-    }
+    public int getEnergy() { return energy; }
 
     public void setEnergy(int energy) {
         this.energy = Math.max(0, Math.min(100, energy));
     }
 
-    public int getHealth() {
-        return health;
-    }
+    public int getHealth() { return health; }
 
     public void setHealth(int health) {
         this.health = Math.max(0, Math.min(100, health));
@@ -92,39 +105,29 @@ public class Pet {
         return mood != null ? mood : (state != null ? state.getMood() : "Неизвестно");
     }
 
-    public void setMood(String mood) {
-        this.mood = mood;
-    }
+    public void setMood(String mood) { this.mood = mood; }
 
-    public long getLastFedTime() {
-        return lastFedTime;
-    }
+    public long getLastFedTime() { return lastFedTime; }
 
     public void updateLastFedTime() {
         this.lastFedTime = System.currentTimeMillis();
     }
 
-    public int getIntelligence() {
-        return intelligence;
-    }
+    public int getIntelligence() { return intelligence; }
 
     public void increaseIntelligence(int amount) {
         this.intelligence = Math.min(100, intelligence + amount);
         checkLevelUp();
     }
 
-    public int getTrustLevel() {
-        return trustLevel;
-    }
+    public int getTrustLevel() { return trustLevel; }
 
     public void increaseTrust(int amount) {
         this.trustLevel = Math.min(100, trustLevel + amount);
         checkLevelUp();
     }
 
-    public int getLevel() {
-        return level;
-    }
+    public int getLevel() { return level; }
 
     private void checkLevelUp() {
         if (intelligence >= 20 && trustLevel >= 20 && level == 1) {
@@ -142,15 +145,15 @@ public class Pet {
             ", Уровень: " + level + ", Интеллект: " + intelligence + ", Доверие: " + trustLevel);
     }
 
-    public void feed() {
+    public void feed(int energyAmount) {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastFedTime < 5000) {
             System.out.println(name + " не голоден прямо сейчас. Подожди немного.");
             return;
         }
 
-        energy = Math.min(100, energy + 20);
-        health = Math.min(100, health + 10);
+        energy = Math.min(100, energy + energyAmount);
+        health = Math.min(100, health + (energyAmount / 2));
         updateLastFedTime();
         System.out.println(name + " поел! Энергия: " + energy + ", Здоровье: " + health);
         handleState();
@@ -177,6 +180,11 @@ public class Pet {
 
         energy = Math.min(100, energy + 30);
         System.out.println(name + " поспал и восстановил силы! Энергия: " + energy);
+        handleState();
+    }
+
+    public void increaseEnergy(int amount) {
+        this.energy = Math.min(100, this.energy + amount);
         handleState();
     }
 }

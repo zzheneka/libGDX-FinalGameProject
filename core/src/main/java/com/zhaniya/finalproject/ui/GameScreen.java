@@ -1,3 +1,4 @@
+// GameScreen.java — обновлённый с исправленной структурой и работающим переключением еды и лекарств
 package com.zhaniya.finalproject.ui;
 
 import com.badlogic.gdx.Game;
@@ -12,16 +13,13 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.zhaniya.finalproject.commands.FeedCommand;
 import com.zhaniya.finalproject.commands.PlayCommand;
-import com.zhaniya.finalproject.commands.SleepCommand;
 import com.zhaniya.finalproject.model.pet.Emotion;
 import com.zhaniya.finalproject.model.pet.Pet;
 import com.zhaniya.finalproject.utils.TimerUtil;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.List;
 
 public class GameScreen implements Screen {
     private final Game game;
@@ -34,19 +32,25 @@ public class GameScreen implements Screen {
 
     private BitmapFont font;
     private GlyphLayout layout;
-
     private Stage stage;
 
     private Texture feedTexture, playTexture, sleepTexture;
-    private Texture appleTexture, juiceTexture, soupTexture, meatTexture, medicineTexture;
-    private Texture leftArrowTexture, rightArrowTexture;
+    private Texture sleepSceneTexture, playgroundTexture, feedingRoomTexture;
+    private Texture arrowLeftTexture, arrowRightTexture;
 
     private ImageButton feedButton, playButton, sleepButton;
-    private ImageButton leftArrow, rightArrow;
 
-    private boolean showFoodMenu = false;
-    private List<ImageButton> foodButtons = new ArrayList<>();
-    private int foodIndex = 0;
+    private boolean isSleeping = false;
+    private boolean isFeeding = false;
+
+    private ArrayList<Texture> foodList;
+    private ArrayList<Texture> medicineList;
+    private int selectedItemIndex = 0;
+    private boolean showingFood = true;
+
+    private String commentText = "";
+    private float commentTimer = 0f;
+    private final float COMMENT_DURATION = 3f;
 
     public GameScreen(Game game, Pet pet) {
         this.game = game;
@@ -56,23 +60,16 @@ public class GameScreen implements Screen {
     @Override
     public void show() {
         batch = new SpriteBatch();
-        emotionAnimations = new EnumMap<>(Emotion.class);
         font = new BitmapFont();
         layout = new GlyphLayout();
-
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
-        // Запуск таймера автоматического обновления
         TimerUtil.startPetTimer(pet);
 
         loadAnimations();
         loadButtons();
-        loadFoodItems();
-
-        updateEmotion();
-        updateVisibleFood();
-        toggleFoodButtons(false);
+        loadFeedingAssets();
     }
 
     private void loadAnimations() {
@@ -82,13 +79,34 @@ public class GameScreen implements Screen {
             case DOG -> "dog";
         };
 
+        emotionAnimations = new EnumMap<>(Emotion.class);
         emotionAnimations.put(Emotion.HAPPY, loadAnimation(basePath + "/happy", 0.2f));
-        emotionAnimations.put(Emotion.ANGRY, loadAnimation(basePath + "/angry", 0.2f));
         emotionAnimations.put(Emotion.SAD, loadAnimation(basePath + "/sad", 0.2f));
-        emotionAnimations.put(Emotion.SLEEP, loadAnimation(basePath + "/sleep", 0.4f));
+
+        sleepSceneTexture = new Texture("backgrounds/sleep_with_dragon.png");
+        playgroundTexture = new Texture("backgrounds/playground.png");
+        feedingRoomTexture = new Texture("backgrounds/kitchen.png");
 
         currentEmotion = pet.getState().getEmotion();
         stateTime = 0f;
+    }
+
+    private void loadFeedingAssets() {
+        arrowLeftTexture = new Texture("ui/arrows/left.png");
+        arrowRightTexture = new Texture("ui/arrows/right.png");
+
+        foodList = new ArrayList<>();
+        medicineList = new ArrayList<>();
+
+
+        medicineList.add(new Texture("ui/medicine/medicine1.png"));
+        foodList.add(new Texture("ui/food/milk.png"));
+        foodList.add(new Texture("ui/food/apple1.png"));
+        foodList.add(new Texture("ui/food/burger.png"));
+        foodList.add(new Texture("ui/food/orange.png"));
+
+
+
     }
 
     private Animation<TextureRegion> loadAnimation(String folderPath, float frameDuration) {
@@ -109,120 +127,66 @@ public class GameScreen implements Screen {
         playButton = new ImageButton(new TextureRegionDrawable(new TextureRegion(playTexture)));
         sleepButton = new ImageButton(new TextureRegionDrawable(new TextureRegion(sleepTexture)));
 
-        feedButton.setSize(120, 50);
-        playButton.setSize(120, 50);
-        sleepButton.setSize(120, 50);
+        feedButton.setSize(160, 70);
+        playButton.setSize(160, 70);
+        sleepButton.setSize(160, 70);
 
-        feedButton.setPosition(40, 30);
-        playButton.setPosition(180, 30);
-        sleepButton.setPosition(320, 30);
+        float centerX = Gdx.graphics.getWidth() / 2f - 240;
+        feedButton.setPosition(centerX, 20);
+        playButton.setPosition(centerX + 180, 20);
+        sleepButton.setPosition(centerX + 360, 20);
 
-        feedButton.addListener(new ClickListener() {
-            @Override public void clicked(InputEvent event, float x, float y) {
-                showFoodMenu = !showFoodMenu;
-                toggleFoodButtons(showFoodMenu);
+        sleepButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (pet.getEnergy() < 50) {
+                    isSleeping = true;
+                    isFeeding = false;
+                    pet.sleep();
+                    commentText = "Zzz... Sleeping time!";
+                } else {
+                    commentText = "I'm not tired yet!";
+                }
+                commentTimer = COMMENT_DURATION;
             }
         });
 
         playButton.addListener(new ClickListener() {
-            @Override public void clicked(InputEvent event, float x, float y) {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
                 new PlayCommand(pet).execute();
+                isSleeping = false;
+                isFeeding = false;
                 updateEmotion();
+                commentText = "Yay! That was fun!";
+                commentTimer = COMMENT_DURATION;
             }
         });
 
-        sleepButton.addListener(new ClickListener() {
-            @Override public void clicked(InputEvent event, float x, float y) {
-                new SleepCommand(pet).execute();
-                updateEmotion();
+        feedButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (pet.getEnergy() < 100) {
+                    isSleeping = false;
+                    isFeeding = true;
+                    selectedItemIndex = 0;
+                    showingFood = true;
+                    commentText = "Choose what to eat or take medicine";
+                } else {
+                    isFeeding = false;
+                    commentText = "I'm full of energy!";
+                }
+                commentTimer = COMMENT_DURATION;
             }
         });
 
         stage.addActor(feedButton);
         stage.addActor(playButton);
         stage.addActor(sleepButton);
-
-        leftArrowTexture = new Texture("ui/arrows/left.png");
-        rightArrowTexture = new Texture("ui/arrows/right.png");
-
-        leftArrow = new ImageButton(new TextureRegionDrawable(new TextureRegion(leftArrowTexture)));
-        rightArrow = new ImageButton(new TextureRegionDrawable(new TextureRegion(rightArrowTexture)));
-
-        leftArrow.setSize(48, 48);
-        rightArrow.setSize(48, 48);
-        leftArrow.setPosition(100, 80);
-        rightArrow.setPosition(340, 80);
-
-        leftArrow.addListener(new ClickListener() {
-            @Override public void clicked(InputEvent event, float x, float y) {
-                if (foodIndex > 0) {
-                    foodIndex--;
-                    updateVisibleFood();
-                }
-            }
-        });
-
-        rightArrow.addListener(new ClickListener() {
-            @Override public void clicked(InputEvent event, float x, float y) {
-                if (foodIndex < foodButtons.size() - 1) {
-                    foodIndex++;
-                    updateVisibleFood();
-                }
-            }
-        });
-
-        stage.addActor(leftArrow);
-        stage.addActor(rightArrow);
     }
 
-    private void loadFoodItems() {
-        appleTexture = new Texture("ui/food/apple.png");
-        juiceTexture = new Texture("ui/food/juice.png");
-        soupTexture = new Texture("ui/food/soup.png");
-        meatTexture = new Texture("ui/food/meat.png");
-        medicineTexture = new Texture("ui/medicine/medicine.png");
-
-        foodButtons.add(createItemButton(appleTexture, 200, 80, 10));
-        foodButtons.add(createItemButton(juiceTexture, 200, 80, 10));
-        foodButtons.add(createItemButton(soupTexture, 200, 80, 10));
-        foodButtons.add(createItemButton(meatTexture, 200, 80, 10));
-        foodButtons.add(createItemButton(medicineTexture, 200, 80, 20));
-
-        for (ImageButton btn : foodButtons) {
-            stage.addActor(btn);
-        }
-    }
-
-    private ImageButton createItemButton(Texture texture, float x, float y, int energyBoost) {
-        ImageButton button = new ImageButton(new TextureRegionDrawable(new TextureRegion(texture)));
-        button.setSize(64, 64);
-        button.setPosition(x, y);
-        button.addListener(new ClickListener() {
-            @Override public void clicked(InputEvent event, float x, float y) {
-                new FeedCommand(pet).execute();
-                pet.setEnergy(pet.getEnergy() + energyBoost);
-                updateEmotion();
-            }
-        });
-        return button;
-    }
-
-    private void toggleFoodButtons(boolean visible) {
-        for (ImageButton btn : foodButtons) {
-            btn.setVisible(visible);
-        }
-        leftArrow.setVisible(visible);
-        rightArrow.setVisible(visible);
-    }
-
-    private void updateVisibleFood() {
-        for (int i = 0; i < foodButtons.size(); i++) {
-            foodButtons.get(i).setVisible(i == foodIndex);
-        }
-    }
-
-    public void updateEmotion() {
-        Emotion newEmotion = pet.getState().getEmotion();
+    private void updateEmotion() {
+        Emotion newEmotion = pet.getEnergy() < 50 ? Emotion.SAD : pet.getState().getEmotion();
         if (newEmotion != currentEmotion) {
             currentEmotion = newEmotion;
             stateTime = 0f;
@@ -234,26 +198,63 @@ public class GameScreen implements Screen {
         ScreenUtils.clear(1, 1, 1, 1);
         stateTime += delta;
 
-        updateEmotion();
-
-        TextureRegion currentFrame = emotionAnimations.get(currentEmotion).getKeyFrame(stateTime, true);
+        if (!isSleeping) updateEmotion();
 
         batch.begin();
 
-        font.getData().setScale(2f);
-        layout.setText(font, "Your Pet");
-        font.draw(batch, layout, (Gdx.graphics.getWidth() - layout.width) / 2, 550);
+        if (isSleeping) {
+            batch.draw(sleepSceneTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        } else {
+            batch.draw(isFeeding ? feedingRoomTexture : playgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        }
 
-        batch.draw(currentFrame, 150, 150, 200, 200);
+        if (isFeeding) {
+            Texture currentItem = showingFood ? foodList.get(selectedItemIndex) : medicineList.get(selectedItemIndex);
+            batch.draw(currentItem, 250, 300, 100, 100);
+            batch.draw(arrowLeftTexture, 180, 320, 50, 50);
+            batch.draw(arrowRightTexture, 370, 320, 50, 50);
+        }
+
+        if (!isSleeping) {
+            TextureRegion currentFrame = emotionAnimations.get(currentEmotion).getKeyFrame(stateTime, true);
+            batch.draw(currentFrame, 200, 50, 180, 180);
+        }
 
         font.getData().setScale(1.5f);
         layout.setText(font, "Energy: " + pet.getEnergy() + "\nMood: " + pet.getMood());
         font.draw(batch, layout, 20, 450);
 
-        batch.end();
+        if (commentTimer > 0) {
+            layout.setText(font, "Drako: " + commentText);
+            font.draw(batch, layout, 20, 400);
+            commentTimer -= delta;
+        }
 
+        batch.end();
         stage.act(delta);
         stage.draw();
+
+        // Обработка стрелок (переключение по кругу)
+        if (isFeeding && Gdx.input.justTouched()) {
+            float x = Gdx.input.getX();
+            float y = Gdx.graphics.getHeight() - Gdx.input.getY();
+
+            if (x >= 180 && x <= 230 && y >= 320 && y <= 370) {
+                if (showingFood) selectedItemIndex = (selectedItemIndex - 1 + foodList.size()) % foodList.size();
+                else selectedItemIndex = (selectedItemIndex - 1 + medicineList.size()) % medicineList.size();
+            } else if (x >= 370 && x <= 420 && y >= 320 && y <= 370) {
+                if (showingFood) selectedItemIndex = (selectedItemIndex + 1) % foodList.size();
+                else selectedItemIndex = (selectedItemIndex + 1) % medicineList.size();
+            } else if (x >= 250 && x <= 350 && y >= 300 && y <= 400) {
+                if (showingFood) pet.feed(10);
+                else {
+                    pet.setHealth(pet.getHealth() + 10);
+                    pet.setMood("Happy");
+                }
+                commentText = showingFood ? "Yummy! Energy increased!" : "Feeling better!";
+                commentTimer = COMMENT_DURATION;
+            }
+        }
     }
 
     @Override public void resize(int width, int height) {}
@@ -270,13 +271,14 @@ public class GameScreen implements Screen {
         feedTexture.dispose();
         playTexture.dispose();
         sleepTexture.dispose();
-        appleTexture.dispose();
-        juiceTexture.dispose();
-        soupTexture.dispose();
-        meatTexture.dispose();
-        medicineTexture.dispose();
-        leftArrowTexture.dispose();
-        rightArrowTexture.dispose();
+        sleepSceneTexture.dispose();
+        playgroundTexture.dispose();
+        feedingRoomTexture.dispose();
+        arrowLeftTexture.dispose();
+        arrowRightTexture.dispose();
+
+        for (Texture tex : foodList) tex.dispose();
+        for (Texture tex : medicineList) tex.dispose();
 
         for (Animation<TextureRegion> anim : emotionAnimations.values()) {
             for (TextureRegion region : anim.getKeyFrames()) {
