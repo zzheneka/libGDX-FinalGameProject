@@ -133,4 +133,42 @@ public class Pet {
             ", Настроение: " + getMood() + ", Здоровье: " + health +
             ", Уровень: " + level + ", Интеллект: " + intelligence + ", Доверие: " + trustLevel);
     }
-}
+
+    public void feed() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastFedTime < 5000) {
+            System.out.println(name + " не голоден прямо сейчас. Подожди немного.");
+            return;
+        }
+
+        energy = Math.min(100, energy + 20);
+        health = Math.min(100, health + 10);
+        updateLastFedTime();
+        System.out.println(name + " поел! Энергия: " + energy + ", Здоровье: " + health);
+        handleState();
+    }
+
+    public void play() {
+        if (energy < 10) {
+            System.out.println(name + " слишком устал для игры.");
+            return;
+        }
+
+        energy = Math.max(0, energy - 10);
+        increaseTrust(5);
+        increaseIntelligence(3);
+        System.out.println(name + " поиграл с тобой! Энергия: " + energy);
+        handleState();
+    }
+
+    public void sleep() {
+        if (energy >= 90) {
+            System.out.println(name + " не хочет спать, он полон энергии!");
+            return;
+        }
+
+        energy = Math.min(100, energy + 30);
+        System.out.println(name + " поспал и восстановил силы! Энергия: " + energy);
+        handleState();
+    }
+}3
