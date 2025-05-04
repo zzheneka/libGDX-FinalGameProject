@@ -24,18 +24,16 @@ public class SleepCommand implements Command {
             return;
         }
 
-        // 🤒 Болезнь может мешать сну (если хочешь)
+
         if (pet.getState() instanceof SickState) {
             System.out.println(pet.getName() + " болеет, но всё равно старается уснуть.");
             // можно всё равно дать возможность спать — не блокировать
         }
 
-        // 💤 Переход в сон
+
         pet.getState().sleep(pet);
         System.out.println(pet.getName() + " лёг спать. Настроение: " + pet.getMood());
 
-        // 🎨 (по желанию)
-        // GameUI.showAction("sleep");
-        // SoundManager.play("sleep.wav");
+
     }
 }
