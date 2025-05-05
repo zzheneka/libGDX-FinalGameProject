@@ -25,11 +25,11 @@ public class TimerUtil {
                     System.out.println(pet.getName() + " не ел уже 2 минуты и теперь голоден!");
                 }
 
-                // Случайная болезнь — 5% шанс
-                if (Math.random() < 0.05 && !pet.isInState(SickState.class)) {
-                    pet.setState(new SickState(pet));
-                    System.out.println(pet.getName() + " внезапно заболел!");
-                }
+//                // Случайная болезнь — 5% шанс
+//                if (Math.random() < 0.05 && !pet.isInState(SickState.class)) {
+//                    pet.setState(new SickState(pet));
+//                    System.out.println(pet.getName() + " внезапно заболел!");
+//                }
             }
         }, 0, UPDATE_INTERVAL);
     }
