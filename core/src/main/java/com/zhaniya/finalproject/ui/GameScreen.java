@@ -2,160 +2,130 @@ package com.zhaniya.finalproject.ui;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.zhaniya.finalproject.model.pet.Pet;
-import com.zhaniya.finalproject.ui.managers.PetManager;
-import com.zhaniya.finalproject.ui.managers.UIManager;
-import com.zhaniya.finalproject.ui.managers.InputManager;
-import com.zhaniya.finalproject.ui.managers.AnimationManager;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.zhaniya.finalproject.ui.minigames.MiniGameSelectionScreen;
+import com.zhaniya.finalproject.ui.managers.KitchenScreen;
 
-public class GameScreen implements Screen {
+
+public class GameScreen extends ScreenAdapter {
     private final Game game;
-    private final Pet pet;
-
-    private final PetManager petManager;
-    private final UIManager uiManager;
-    private final InputManager inputManager;
-    private final AnimationManager animationManager;
-
     private SpriteBatch batch;
-    private BitmapFont font;
-    private GlyphLayout layout;
-
     private Texture backgroundTexture;
-    private Texture playgroundTexture;
+    private Texture petTexture;
     private Texture sleepTexture;
+    private Texture playgroundTexture;
+    private Stage stage;
     private boolean isSleeping = false;
 
-    public GameScreen(Game game, Pet pet) {
+    public GameScreen(Game game, Object o) {
         this.game = game;
-        this.pet = pet;
+        batch = new SpriteBatch();
+        stage = new Stage(new ScreenViewport());
+        Gdx.input.setInputProcessor(stage);
 
-        petManager = new PetManager(pet);
-        uiManager = new UIManager();
-        inputManager = new InputManager(petManager, uiManager.getStage());
-        animationManager = new AnimationManager(pet);
+        // Загрузка текстур
+        backgroundTexture = new Texture("backgrounds/playground.png");
+        sleepTexture = new Texture("backgrounds/sleep_with_dragon.png");
+        playgroundTexture = new Texture("backgrounds/playground.png");
+        petTexture = new Texture("pets/standing.png");
 
-        Gdx.input.setInputProcessor(uiManager.getStage());
+        createUI();
+    }
+
+    private void createUI() {
+        Table table = new Table();
+        table.setFillParent(true);
+        table.top().pad(20);
+        stage.addActor(table);
+
+        Label title = new Label("Tamagotchi+", new Skin(Gdx.files.internal("uiskin.json")));
+        title.setFontScale(2);
+
+        TextButton feedButton = new TextButton("Кормить", new Skin(Gdx.files.internal("uiskin.json")));
+        TextButton playButton = new TextButton("Играть", new Skin(Gdx.files.internal("uiskin.json")));
+        TextButton sleepButton = new TextButton("Спать", new Skin(Gdx.files.internal("uiskin.json")));
+
+        // Логика кнопки "Кормить"
+        feedButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new KitchenScreen(game, null));
+                System.out.println("Переход на экран кухни.");
+            }
+        });
+
+        // Логика кнопки "Играть"
+        playButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new MiniGameSelectionScreen(game));
+                System.out.println("Переход на экран выбора мини-игр.");
+            }
+        });
+
+        // Логика кнопки "Спать"
+        sleepButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                isSleeping = !isSleeping;
+                if (isSleeping) {
+                    backgroundTexture = sleepTexture;
+                    petTexture = new Texture("pets/sleeping.png");
+                    System.out.println("Питомец уснул!");
+                } else {
+                    backgroundTexture = playgroundTexture;
+                    petTexture = new Texture("pets/standing.png");
+                    System.out.println("Питомец проснулся!");
+                }
+            }
+        });
+
+        // Добавляем элементы на экран
+        table.add(title).padBottom(20).row();
+        table.add(feedButton).pad(10).width(200).height(50).row();
+        table.add(playButton).pad(10).width(200).height(50).row();
+        table.add(sleepButton).pad(10).width(200).height(50).row();
     }
 
     @Override
     public void show() {
-        batch = new SpriteBatch();
-        font = new BitmapFont();
-        layout = new GlyphLayout();
-
-        playgroundTexture = new Texture("backgrounds/playground.png");
-        sleepTexture = new Texture("backgrounds/sleep_with_dragon.png");
-        backgroundTexture = playgroundTexture;
-
-        setupButtons();
-    }
-
-    private void setupButtons() {
-        TextButton feedButton = new TextButton("Feed", uiManager.getSkin());
-        feedButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                petManager.feedPet(20);
-                updateBackground(playgroundTexture);
-                System.out.println("Питомец накормлен!");
-            }
-        });
-
-        TextButton playButton = new TextButton("Play", uiManager.getSkin());
-        playButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                petManager.playWithPet();
-                isSleeping = false;
-                updateBackground(playgroundTexture);
-                System.out.println("Играем с питомцем!");
-            }
-        });
-
-        TextButton sleepButton = new TextButton("Sleep", uiManager.getSkin());
-        sleepButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                petManager.putPetToSleep();
-                isSleeping = true;
-                updateBackground(sleepTexture);
-                System.out.println("Питомец спит!");
-            }
-        });
-
-        TextButton miniGamesButton = new TextButton("Mini Games", uiManager.getSkin());
-        miniGamesButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new MiniGameSelectionScreen(game));
-                System.out.println("Переход на экран мини-игр!");
-            }
-        });
-
-        uiManager.getTable().add(feedButton).pad(10);
-        uiManager.getTable().add(playButton).pad(10);
-        uiManager.getTable().add(sleepButton).pad(10);
-        uiManager.getTable().add(miniGamesButton).pad(10).row();
-    }
-
-    private void updateBackground(Texture newTexture) {
-        if (backgroundTexture != newTexture) {
-            backgroundTexture = newTexture;
-        }
+        System.out.println("Главный экран игры отображён.");
     }
 
     @Override
     public void render(float delta) {
-        ScreenUtils.clear(1, 1, 1, 1);
+        ScreenUtils.clear(0, 0, 0, 1);
         batch.begin();
         batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        layout.setText(font, "Energy: " + pet.getEnergy() + "\nMood: " + pet.getMood());
-        font.draw(batch, layout, 20, Gdx.graphics.getHeight() - 20);
-        if (!isSleeping) {
-            animationManager.render(batch);
-        }
+
+        // Рисуем питомца
+        batch.draw(petTexture, Gdx.graphics.getWidth() / 2f - 64, 100, 128, 128);
         batch.end();
-        uiManager.render(delta);
+
+        stage.act(delta);
+        stage.draw();
     }
 
     @Override
     public void resize(int width, int height) {
-        uiManager.resize(width, height);
-        System.out.println("Экран изменён: ширина = " + width + ", высота = " + height);
-    }
-
-    @Override
-    public void pause() {
-        System.out.println("Игра на паузе");
-    }
-
-    @Override
-    public void resume() {
-        System.out.println("Игра возобновлена");
-    }
-
-    @Override
-    public void hide() {
-        System.out.println("Экран скрыт");
+        stage.getViewport().update(width, height, true);
     }
 
     @Override
     public void dispose() {
         batch.dispose();
-        font.dispose();
-        uiManager.dispose();
-        playgroundTexture.dispose();
+        backgroundTexture.dispose();
         sleepTexture.dispose();
+        playgroundTexture.dispose();
+        petTexture.dispose();
+        stage.dispose();
     }
 }
