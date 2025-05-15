@@ -118,12 +118,22 @@ public class GameScreen implements Screen {
     }
 
     // Слушатели для кнопок
+    // Слушатель для кнопки кормления
     class FeedButtonListener extends ClickListener {
         @Override
         public void clicked(InputEvent event, float x, float y) {
-            game.setScreen(new KitchenScreen(game, pet));  // Переход на экран кухни
+            try {
+                // Попытка открыть экран кухни
+                KitchenScreen kitchenScreen = new KitchenScreen(game, pet);
+                game.setScreen(kitchenScreen);
+                System.out.println("Переход на экран кухни");
+            } catch (Exception e) {
+                System.err.println("Ошибка при переходе на экран кухни: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
+
 
     class PlayButtonListener extends ClickListener {
         @Override

@@ -40,9 +40,14 @@ public class AnimationManager {
 
     public void render(SpriteBatch batch) {
         stateTime += Gdx.graphics.getDeltaTime();
-        Emotion currentEmotion = pet.getState().getEmotion();
-        TextureRegion frame = animations.get(currentEmotion).getKeyFrame(stateTime, true);
+        TextureRegion frame = getCurrentFrame();
         batch.draw(frame, 200, 50, 180, 180);
+    }
+
+    // ✅ Добавляем метод для получения текущего кадра анимации
+    public TextureRegion getCurrentFrame() {
+        Emotion currentEmotion = pet.getState().getEmotion();
+        return animations.get(currentEmotion).getKeyFrame(stateTime, true);
     }
 
     public void dispose() {

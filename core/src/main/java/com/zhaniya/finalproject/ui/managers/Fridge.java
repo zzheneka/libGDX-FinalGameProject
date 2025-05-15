@@ -1,45 +1,30 @@
 package com.zhaniya.finalproject.ui.managers;
 
-
 import com.zhaniya.finalproject.model.FoodItem;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Fridge {
-    private HashMap<String, FoodItem> items;
-    private boolean isOpen;
+    private final Map<String, FoodItem> items;
 
     public Fridge() {
         items = new HashMap<>();
-        isOpen = false;
-        // Инициализация продуктов в холодильнике
-        items.put("Milk", new FoodItem("Milk", 3));
-        items.put("Apple", new FoodItem("Apple", 5));
-        items.put("Juice", new FoodItem("Juice", 2));
+        items.put("Apple", new FoodItem("Apple", 5, "ui/food/apple.png"));
+        items.put("Juice", new FoodItem("Juice", 2, "ui/food/juice.png"));
+        items.put("Milk", new FoodItem("Milk", 3, "ui/food/milk.png"));
     }
 
-    public void open() {
-        isOpen = true;
-    }
-
-    public void close() {
-        isOpen = false;
-    }
-
-    public boolean isOpen() {
-        return isOpen;
-    }
-
-    public HashMap<String, FoodItem> getItems() {
+    public Map<String, FoodItem> getItems() {
         return items;
     }
 
-    public void useItem(String itemName) {
+    public boolean useItem(String itemName) {
         FoodItem item = items.get(itemName);
         if (item != null && item.isAvailable()) {
-            item.useItem();
-            System.out.println("Использован продукт: " + itemName + ". Осталось: " + item.getQuantity());
-        } else {
-            System.out.println("Продукт закончился: " + itemName);
+            item.consume();
+            return true;
         }
+        System.out.println("Продукт не найден или закончился: " + itemName);
+        return false;
     }
 }

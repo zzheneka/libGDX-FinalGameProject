@@ -7,9 +7,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.zhaniya.finalproject.model.pet.Pet;
-import com.zhaniya.finalproject.ui.GameScreen;
 import com.zhaniya.finalproject.model.FoodItem;
-import com.zhaniya.finalproject.ui.managers.AnimationManager;
+
 import java.util.Map;
 
 public class KitchenScreen implements Screen {
@@ -18,7 +17,7 @@ public class KitchenScreen implements Screen {
     private BitmapFont font;
 
     private KitchenManager kitchenManager;
-    private AnimationManager animationManager;
+    private AnimationManager animationManager;  // Добавил менеджер анимаций
     private Texture kitchenTexture;
     private Texture fridgeClosedTexture;
     private Texture fridgeOpenTexture;
@@ -31,16 +30,21 @@ public class KitchenScreen implements Screen {
 
         // Инициализация менеджеров
         kitchenManager = new KitchenManager();
-        animationManager = new AnimationManager(pet);
+        animationManager = new AnimationManager(pet);  // Инициализация менеджера анимаций
 
         // Инициализация рендеров
         batch = new SpriteBatch();
         font = new BitmapFont();
 
         // Загрузка текстур
-        kitchenTexture = new Texture("backgrounds/kitchen.png");
-        fridgeClosedTexture = new Texture("ui/fridge_closed.png");
-        fridgeOpenTexture = new Texture("ui/fridge_open.png");
+        try {
+            kitchenTexture = new Texture(Gdx.files.internal("backgrounds/kitchen.png"));
+            fridgeClosedTexture = new Texture(Gdx.files.internal("ui/fridge_closed.png"));
+            fridgeOpenTexture = new Texture(Gdx.files.internal("ui/fridge_open.png"));
+
+        } catch (Exception e) {
+            System.err.println("Ошибка при загрузке текстуры: " + e.getMessage());
+        }
     }
 
     @Override
@@ -56,26 +60,23 @@ public class KitchenScreen implements Screen {
         // Отображаем фон кухни
         batch.draw(kitchenTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-        // Отображаем холодильник с уменьшенным размером
+        // Логика отображения холодильника
         Texture fridgeTexture = kitchenManager.isFridgeOpen() ? fridgeOpenTexture : fridgeClosedTexture;
-        batch.draw(fridgeTexture, 50, 100, fridgeTexture.getWidth() * 0.6f, fridgeTexture.getHeight() * 0.6f);
+        batch.draw(fridgeTexture, -20, 50, fridgeTexture.getWidth() * 0.25f, fridgeTexture.getHeight() * 0.25f);
 
-        // Отображаем продукты, если холодильник открыт
+        // Анимация питомца
+        animationManager.render(batch);
+
+        // Отображение продуктов при открытом холодильнике
         if (kitchenManager.isFridgeOpen()) {
             int y = 300;
-            for (Map.Entry<String, FoodItem> entry : kitchenManager.getFridge().getItems().entrySet()) {
+            for (Map.Entry<String, FoodItem> entry : kitchenManager.getFridge().entrySet()) {
                 font.draw(batch, entry.getKey() + ": " + entry.getValue().getQuantity(), 200, y);
-                y -= 20;
+                y -= 30;
             }
         }
 
-        // Отображаем дракона
-        TextureRegion currentFrame = animationManager.getCurrentFrame();
-        batch.draw(currentFrame, 300, 50, 180, 180); // Позиция дракона на кухне
-
         batch.end();
-
-        // Обработка нажатий на экран
         handleInput();
     }
 
@@ -84,8 +85,8 @@ public class KitchenScreen implements Screen {
             int x = Gdx.input.getX();
             int y = Gdx.graphics.getHeight() - Gdx.input.getY();
 
-            // Клик по холодильнику
-            if (x > 50 && x < 140 && y > 100 && y < 250) {
+            // Проверяем клик по холодильнику
+            if (x > 20 && x < 100 && y > 50 && y < 150) {
                 if (kitchenManager.isFridgeOpen()) {
                     kitchenManager.closeFridge();
                     System.out.println("Холодильник закрыт.");
@@ -93,33 +94,20 @@ public class KitchenScreen implements Screen {
                     kitchenManager.openFridge();
                     System.out.println("Холодильник открыт.");
                 }
-            } else {
-                // Если клик не по холодильнику - возвращаемся на игровой экран
-                game.setScreen(new GameScreen(game, pet));
-                System.out.println("Возврат на основной экран.");
             }
         }
     }
+    @Override
+    public void resize(int width, int height) {}
 
     @Override
-    public void resize(int width, int height) {
-        System.out.println("Изменение размера экрана кухни.");
-    }
+    public void pause() {}
 
     @Override
-    public void pause() {
-        System.out.println("Пауза на экране кухни.");
-    }
+    public void resume() {}
 
     @Override
-    public void resume() {
-        System.out.println("Возобновление экрана кухни.");
-    }
-
-    @Override
-    public void hide() {
-        System.out.println("Экран кухни скрыт.");
-    }
+    public void hide() {}
 
     @Override
     public void dispose() {
@@ -128,6 +116,6 @@ public class KitchenScreen implements Screen {
         kitchenTexture.dispose();
         fridgeClosedTexture.dispose();
         fridgeOpenTexture.dispose();
-        System.out.println("Очистка ресурсов экрана кухни.");
+        System.out.println("Ресурсы экрана кухни очищены.");
     }
 }
