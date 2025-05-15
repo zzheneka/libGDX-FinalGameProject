@@ -4,17 +4,19 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.ScreenUtils;
 import com.zhaniya.finalproject.model.pet.Pet;
 import com.zhaniya.finalproject.ui.managers.PetManager;
 import com.zhaniya.finalproject.ui.managers.UIManager;
 import com.zhaniya.finalproject.ui.managers.InputManager;
 import com.zhaniya.finalproject.ui.managers.AnimationManager;
-import com.zhaniya.finalproject.ui.managers.KitchenManager;  // Добавлен импорт
-import com.zhaniya.finalproject.ui.managers.KitchenScreen;          // Добавлен импорт
+import com.zhaniya.finalproject.ui.minigames.MiniGameSelectionScreen;
 
 public class GameScreen implements Screen {
     private final Game game;
@@ -29,12 +31,9 @@ public class GameScreen implements Screen {
     private BitmapFont font;
     private GlyphLayout layout;
 
-    // Фон
     private Texture backgroundTexture;
     private Texture playgroundTexture;
     private Texture sleepTexture;
-
-    // Логическое поле для состояния сна
     private boolean isSleeping = false;
 
     public GameScreen(Game game, Pet pet) {
@@ -57,12 +56,57 @@ public class GameScreen implements Screen {
 
         playgroundTexture = new Texture("backgrounds/playground.png");
         sleepTexture = new Texture("backgrounds/sleep_with_dragon.png");
-
         backgroundTexture = playgroundTexture;
 
-        uiManager.setFeedButtonListener(new FeedButtonListener());
-        uiManager.setPlayButtonListener(new PlayButtonListener());
-        uiManager.setSleepButtonListener(new SleepButtonListener());
+        setupButtons();
+    }
+
+    private void setupButtons() {
+        TextButton feedButton = new TextButton("Feed", uiManager.getSkin());
+        feedButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                petManager.feedPet(20);
+                updateBackground(playgroundTexture);
+                System.out.println("Питомец накормлен!");
+            }
+        });
+
+        TextButton playButton = new TextButton("Play", uiManager.getSkin());
+        playButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                petManager.playWithPet();
+                isSleeping = false;
+                updateBackground(playgroundTexture);
+                System.out.println("Играем с питомцем!");
+            }
+        });
+
+        TextButton sleepButton = new TextButton("Sleep", uiManager.getSkin());
+        sleepButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                petManager.putPetToSleep();
+                isSleeping = true;
+                updateBackground(sleepTexture);
+                System.out.println("Питомец спит!");
+            }
+        });
+
+        TextButton miniGamesButton = new TextButton("Mini Games", uiManager.getSkin());
+        miniGamesButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new MiniGameSelectionScreen(game));
+                System.out.println("Переход на экран мини-игр!");
+            }
+        });
+
+        uiManager.getTable().add(feedButton).pad(10);
+        uiManager.getTable().add(playButton).pad(10);
+        uiManager.getTable().add(sleepButton).pad(10);
+        uiManager.getTable().add(miniGamesButton).pad(10).row();
     }
 
     private void updateBackground(Texture newTexture) {
@@ -75,20 +119,19 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         ScreenUtils.clear(1, 1, 1, 1);
         batch.begin();
-
         batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        font.draw(batch, "Энергия: " + pet.getEnergy() + "\nНастроение: " + pet.getMood(), 20, 450);
-
+        layout.setText(font, "Energy: " + pet.getEnergy() + "\nMood: " + pet.getMood());
+        font.draw(batch, layout, 20, Gdx.graphics.getHeight() - 20);
         if (!isSleeping) {
             animationManager.render(batch);
         }
-
         batch.end();
         uiManager.render(delta);
     }
 
     @Override
     public void resize(int width, int height) {
+        uiManager.resize(width, height);
         System.out.println("Экран изменён: ширина = " + width + ", высота = " + height);
     }
 
@@ -112,46 +155,7 @@ public class GameScreen implements Screen {
         batch.dispose();
         font.dispose();
         uiManager.dispose();
-        animationManager.dispose();
         playgroundTexture.dispose();
         sleepTexture.dispose();
-    }
-
-    // Слушатели для кнопок
-    // Слушатель для кнопки кормления
-    class FeedButtonListener extends ClickListener {
-        @Override
-        public void clicked(InputEvent event, float x, float y) {
-            try {
-                // Попытка открыть экран кухни
-                KitchenScreen kitchenScreen = new KitchenScreen(game, pet);
-                game.setScreen(kitchenScreen);
-                System.out.println("Переход на экран кухни");
-            } catch (Exception e) {
-                System.err.println("Ошибка при переходе на экран кухни: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-    }
-
-
-    class PlayButtonListener extends ClickListener {
-        @Override
-        public void clicked(InputEvent event, float x, float y) {
-            petManager.playWithPet();
-            isSleeping = false;
-            updateBackground(playgroundTexture);
-            System.out.println("Играем с питомцем!");
-        }
-    }
-
-    class SleepButtonListener extends ClickListener {
-        @Override
-        public void clicked(InputEvent event, float x, float y) {
-            petManager.putPetToSleep();
-            isSleeping = true;
-            updateBackground(sleepTexture);
-            System.out.println("Питомец спит!");
-        }
     }
 }
