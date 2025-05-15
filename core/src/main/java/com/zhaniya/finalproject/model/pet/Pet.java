@@ -13,7 +13,8 @@ public class Pet implements CloneablePet {
 
     private int intelligence;
     private int trustLevel;
-    int level;
+    private int level;
+    private boolean playing;
 
     public Pet(String name, PetType type, PetState state) {
         this.name = name;
@@ -21,11 +22,12 @@ public class Pet implements CloneablePet {
         this.state = state;
         this.energy = 100;
         this.health = 100;
-        this.mood = (state != null) ? state.getMood() : "Нейтральный";
+        this.mood = (state != null) ? state.getMood() : "Neutral";
         this.lastFedTime = System.currentTimeMillis();
         this.intelligence = 0;
         this.trustLevel = 0;
         this.level = 1;
+        this.playing = false;
 
         TimerUtil.getInstance().start(this);
     }
@@ -43,28 +45,24 @@ public class Pet implements CloneablePet {
 
         if (this.state != null) {
             try {
-                PetState clonedState = this.state.getClass()
-                    .getConstructor(Pet.class)
-                    .newInstance(copy);
+                PetState clonedState = this.state.getClass().getConstructor(Pet.class).newInstance(copy);
                 copy.setState(clonedState);
             } catch (Exception e) {
-                System.out.println("Не удалось клонировать состояние: " + e.getMessage());
+                System.out.println("Failed to clone state: " + e.getMessage());
             }
         }
-
         return copy;
     }
 
-    // остальная логика без изменений (feed, play, sleep и т.д.)
     public void handleState() {
         if (energy < 30 && !isInState(TiredState.class)) {
             setState(new TiredState(this));
-            System.out.println(name + " слишком устал и переходит в состояние Устал.");
+            System.out.println(name + " is too tired and switches to Tired state.");
         }
 
         if (health < 30 && !isInState(SickState.class)) {
             setState(new SickState(this));
-            System.out.println(name + " заболел из-за плохого здоровья.");
+            System.out.println(name + " got sick due to low health.");
         }
 
         if (state != null) {
@@ -76,7 +74,7 @@ public class Pet implements CloneablePet {
         if (this.state != null && this.state.getClass().equals(newState.getClass())) return;
         this.state = newState;
         this.mood = newState.getMood();
-        System.out.println(name + " перешел в состояние: " + newState.getClass().getSimpleName());
+        System.out.println(name + " switched to state: " + newState.getClass().getSimpleName());
     }
 
     public boolean isInState(Class<? extends PetState> stateClass) {
@@ -86,8 +84,6 @@ public class Pet implements CloneablePet {
     public PetState getState() { return state; }
 
     public String getName() { return name; }
-
-    public PetType getType() { return type; }
 
     public int getEnergy() { return energy; }
 
@@ -102,7 +98,7 @@ public class Pet implements CloneablePet {
     }
 
     public String getMood() {
-        return mood != null ? mood : (state != null ? state.getMood() : "Неизвестно");
+        return mood != null ? mood : (state != null ? state.getMood() : "Unknown");
     }
 
     public void setMood(String mood) { this.mood = mood; }
@@ -132,59 +128,78 @@ public class Pet implements CloneablePet {
     private void checkLevelUp() {
         if (intelligence >= 20 && trustLevel >= 20 && level == 1) {
             level = 2;
-            System.out.println(name + " повысил уровень до 2! 🎉");
+            System.out.println(name + " leveled up to 2! 🎉");
         } else if (intelligence >= 50 && trustLevel >= 50 && level == 2) {
             level = 3;
-            System.out.println(name + " повысил уровень до 3! 🌟");
+            System.out.println(name + " leveled up to 3! 🌟");
         }
     }
 
     public void printStats() {
-        System.out.println(name + " [" + type + "] - Энергия: " + energy +
-            ", Настроение: " + getMood() + ", Здоровье: " + health +
-            ", Уровень: " + level + ", Интеллект: " + intelligence + ", Доверие: " + trustLevel);
+        System.out.println(name + " [" + type + "] - Energy: " + energy +
+            ", Mood: " + getMood() + ", Health: " + health +
+            ", Level: " + level + ", Intelligence: " + intelligence + ", Trust: " + trustLevel);
     }
 
     public void feed(int energyAmount) {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastFedTime < 5000) {
-            System.out.println(name + " не голоден прямо сейчас. Подожди немного.");
+            System.out.println(name + " is not hungry right now. Wait a bit.");
             return;
         }
 
         energy = Math.min(100, energy + energyAmount);
         health = Math.min(100, health + (energyAmount / 2));
         updateLastFedTime();
-        System.out.println(name + " поел! Энергия: " + energy + ", Здоровье: " + health);
+        System.out.println(name + " ate! Energy: " + energy + ", Health: " + health);
         handleState();
     }
 
     public void play() {
         if (energy < 10) {
-            System.out.println(name + " слишком устал для игры.");
+            System.out.println(name + " is too tired to play.");
             return;
         }
 
-        energy = Math.max(0, energy - 10);
+        setPlaying(true);
+        decreaseEnergy(10);
         increaseTrust(5);
         increaseIntelligence(3);
-        System.out.println(name + " поиграл с тобой! Энергия: " + energy);
+        System.out.println(name + " played! Energy: " + energy);
+        setPlaying(false);
         handleState();
     }
 
     public void sleep() {
         if (energy >= 90) {
-            System.out.println(name + " не хочет спать, он полон энергии!");
+            System.out.println(name + " is not sleepy, full of energy!");
             return;
         }
 
         energy = Math.min(100, energy + 30);
-        System.out.println(name + " поспал и восстановил силы! Энергия: " + energy);
+        System.out.println(name + " slept and restored energy! Energy: " + energy);
         handleState();
     }
 
     public void increaseEnergy(int amount) {
         this.energy = Math.min(100, this.energy + amount);
         handleState();
+    }
+
+    public void decreaseEnergy(int amount) {
+        this.energy = Math.max(0, this.energy - amount);
+        handleState();
+    }
+
+    public boolean isPlaying() {
+        return playing;
+    }
+
+    public void setPlaying(boolean playing) {
+        this.playing = playing;
+    }
+
+    public boolean isFed() {
+        return (System.currentTimeMillis() - lastFedTime) < 5000;
     }
 }
