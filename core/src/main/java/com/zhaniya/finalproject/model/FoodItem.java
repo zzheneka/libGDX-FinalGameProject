@@ -27,12 +27,10 @@ public class FoodItem {
         return texturePath;
     }
 
-    // Метод проверки доступности
     public boolean isAvailable() {
         return quantity > 0;
     }
 
-    // Метод использования предмета
     public void consume() {
         if (isAvailable()) {
             quantity--;

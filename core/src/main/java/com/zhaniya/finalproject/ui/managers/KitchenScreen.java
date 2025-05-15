@@ -17,7 +17,7 @@ public class KitchenScreen implements Screen {
     private BitmapFont font;
 
     private KitchenManager kitchenManager;
-    private AnimationManager animationManager;  // Добавил менеджер анимаций
+    private AnimationManager animationManager;
     private Texture kitchenTexture;
     private Texture fridgeClosedTexture;
     private Texture fridgeOpenTexture;
@@ -30,7 +30,7 @@ public class KitchenScreen implements Screen {
 
         // Инициализация менеджеров
         kitchenManager = new KitchenManager();
-        animationManager = new AnimationManager(pet);  // Инициализация менеджера анимаций
+        animationManager = new AnimationManager(pet);
 
         // Инициализация рендеров
         batch = new SpriteBatch();
@@ -41,7 +41,6 @@ public class KitchenScreen implements Screen {
             kitchenTexture = new Texture(Gdx.files.internal("backgrounds/kitchen.png"));
             fridgeClosedTexture = new Texture(Gdx.files.internal("ui/fridge_closed.png"));
             fridgeOpenTexture = new Texture(Gdx.files.internal("ui/fridge_open.png"));
-
         } catch (Exception e) {
             System.err.println("Ошибка при загрузке текстуры: " + e.getMessage());
         }
@@ -71,7 +70,8 @@ public class KitchenScreen implements Screen {
         if (kitchenManager.isFridgeOpen()) {
             int y = 300;
             for (Map.Entry<String, FoodItem> entry : kitchenManager.getFridge().entrySet()) {
-                font.draw(batch, entry.getKey() + ": " + entry.getValue().getQuantity(), 200, y);
+                FoodItem item = entry.getValue();
+                font.draw(batch, entry.getKey() + ": " + item.getQuantity(), 200, y);
                 y -= 30;
             }
         }
@@ -80,10 +80,39 @@ public class KitchenScreen implements Screen {
         handleInput();
     }
 
+    /**
+     * Метод обработки нажатия на еду
+     */
+    private void handleFoodClick(int x, int y) {
+        int itemY = 300;  // Начальная координата по Y
+        for (Map.Entry<String, FoodItem> entry : kitchenManager.getFridge().entrySet()) {
+            FoodItem item = entry.getValue();
+
+            // Проверка области клика на еду
+            if (x > 200 && x < 300 && y > itemY - 30 && y < itemY) {
+                if (item.isAvailable()) {
+                    item.consume();
+                    pet.increaseEnergy(10);  // Увеличиваем энергию питомца
+                    System.out.println("Питомец съел: " + entry.getKey());
+                } else {
+                    System.out.println("Продукт закончился: " + entry.getKey());
+                }
+                break;
+            }
+            itemY -= 30;  // Сдвигаем координату для следующего предмета
+        }
+    }
+
+    /**
+     * Метод обработки ввода
+     */
     private void handleInput() {
         if (Gdx.input.justTouched()) {
             int x = Gdx.input.getX();
             int y = Gdx.graphics.getHeight() - Gdx.input.getY();
+
+            // Проверяем клик по еде
+            handleFoodClick(x, y);
 
             // Проверяем клик по холодильнику
             if (x > 20 && x < 100 && y > 50 && y < 150) {
@@ -97,6 +126,7 @@ public class KitchenScreen implements Screen {
             }
         }
     }
+
     @Override
     public void resize(int width, int height) {}
 
