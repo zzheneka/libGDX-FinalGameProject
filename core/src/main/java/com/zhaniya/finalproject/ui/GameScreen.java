@@ -43,26 +43,43 @@ public class GameScreen extends ScreenAdapter {
     private void createUI() {
         Table table = new Table();
         table.setFillParent(true);
-        table.top().pad(20);
+        table.bottom().pad(20);  // Размещаем кнопки внизу экрана
         stage.addActor(table);
 
-        // Создаем стиль текста и кнопок без использования uiskin.json
+        // Создаем стиль текста и кнопок
         BitmapFont font = new BitmapFont();
         Label.LabelStyle labelStyle = new Label.LabelStyle();
         labelStyle.font = font;
 
         TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
         buttonStyle.font = font;
-        buttonStyle.up = new Image(new Texture(Gdx.files.internal("dragon/happy/frame1.png"))).getDrawable();
+
+        // Загружаем текстуры кнопок из папки ui/buttons
+        Texture feedTexture = new Texture(Gdx.files.internal("ui/buttons/feed_button.png"));
+        Texture playTexture = new Texture(Gdx.files.internal("ui/buttons/play_button.png"));
+        Texture sleepTexture = new Texture(Gdx.files.internal("ui/buttons/sleep_button.png"));
+
+        // Стиль кнопок
+        TextButton.TextButtonStyle feedButtonStyle = new TextButton.TextButtonStyle();
+        feedButtonStyle.font = font;
+        feedButtonStyle.up = new Image(feedTexture).getDrawable();
+
+        TextButton.TextButtonStyle playButtonStyle = new TextButton.TextButtonStyle();
+        playButtonStyle.font = font;
+        playButtonStyle.up = new Image(playTexture).getDrawable();
+
+        TextButton.TextButtonStyle sleepButtonStyle = new TextButton.TextButtonStyle();
+        sleepButtonStyle.font = font;
+        sleepButtonStyle.up = new Image(sleepTexture).getDrawable();
 
         // Заголовок
         Label title = new Label("Tamagotchi+", labelStyle);
         title.setFontScale(2);
 
-        // Кнопки
-        TextButton feedButton = new TextButton("Кормить", buttonStyle);
-        TextButton playButton = new TextButton("Играть", buttonStyle);
-        TextButton sleepButton = new TextButton("Спать", buttonStyle);
+        // Создаем кнопки
+        TextButton feedButton = new TextButton("", feedButtonStyle);
+        TextButton playButton = new TextButton("", playButtonStyle);
+        TextButton sleepButton = new TextButton("", sleepButtonStyle);
 
         // Логика кнопки "Кормить"
         feedButton.addListener(new ClickListener() {
@@ -101,9 +118,9 @@ public class GameScreen extends ScreenAdapter {
 
         // Добавляем элементы на экран
         table.add(title).padBottom(20).row();
-        table.add(feedButton).pad(10).width(200).height(50).row();
-        table.add(playButton).pad(10).width(200).height(50).row();
-        table.add(sleepButton).pad(10).width(200).height(50).row();
+        table.add(feedButton).pad(10).width(150).height(50);
+        table.add(playButton).pad(10).width(150).height(50);
+        table.add(sleepButton).pad(10).width(150).height(50);
     }
 
     @Override
