@@ -27,7 +27,6 @@ public class GameScreen extends ScreenAdapter {
     private boolean isSleeping = false;
     private Pet pet;
 
-    // Метки для энергии и комментария
     private Label energyLabel;
     private Label commentLabel;
 
@@ -38,7 +37,6 @@ public class GameScreen extends ScreenAdapter {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
-        // Загрузка текстур
         backgroundTexture = new Texture(Gdx.files.internal("backgrounds/playground.png"));
         sleepTexture = new Texture(Gdx.files.internal("backgrounds/sleep_with_dragon.png"));
         playgroundTexture = new Texture(Gdx.files.internal("backgrounds/playground.png"));
@@ -50,31 +48,29 @@ public class GameScreen extends ScreenAdapter {
     private void createUI() {
         Table table = new Table();
         table.setFillParent(true);
-        table.bottom().pad(20);
+        table.top().pad(10);
         stage.addActor(table);
 
         BitmapFont font = new BitmapFont();
         Label.LabelStyle labelStyle = new Label.LabelStyle();
         labelStyle.font = font;
 
-        // Заголовок
         Label title = new Label("Tamagotchi+", labelStyle);
         title.setFontScale(2);
 
-        // Метка энергии
         energyLabel = new Label("Energy: " + pet.getEnergy(), labelStyle);
-        energyLabel.setFontScale(1.5f);
+        energyLabel.setFontScale(1.2f);
 
-        // Метка комментария
         commentLabel = new Label("Я счастлив!", labelStyle);
         commentLabel.setFontScale(1.2f);
 
-        // Загрузка текстур для кнопок
         Texture feedTexture = new Texture(Gdx.files.internal("ui/buttons/feed_button.png"));
         Texture playTexture = new Texture(Gdx.files.internal("ui/buttons/play_button.png"));
         Texture sleepTexture = new Texture(Gdx.files.internal("ui/buttons/sleep_button.png"));
 
-        // Создаем стиль кнопок
+        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
+        buttonStyle.font = font;
+
         TextButton.TextButtonStyle feedButtonStyle = new TextButton.TextButtonStyle();
         feedButtonStyle.font = font;
         feedButtonStyle.up = new Image(feedTexture).getDrawable();
@@ -87,15 +83,10 @@ public class GameScreen extends ScreenAdapter {
         sleepButtonStyle.font = font;
         sleepButtonStyle.up = new Image(sleepTexture).getDrawable();
 
-        // Создаем кнопки с изображениями
         TextButton feedButton = new TextButton("", feedButtonStyle);
         TextButton playButton = new TextButton("", playButtonStyle);
         TextButton sleepButton = new TextButton("", sleepButtonStyle);
 
-        // Уменьшаем размер кнопок
-        float buttonSize = 80;
-
-        // Кнопка "Feed"
         feedButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -104,16 +95,14 @@ public class GameScreen extends ScreenAdapter {
             }
         });
 
-        // Кнопка "Play"
         playButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new MiniGameSelectionScreen(game));
+                game.setScreen(new MiniGameSelectionScreen(game, pet));
                 System.out.println("Переход на экран выбора мини-игр.");
             }
         });
 
-        // Кнопка "Sleep"
         sleepButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -121,13 +110,12 @@ public class GameScreen extends ScreenAdapter {
             }
         });
 
-        // Добавляем элементы на экран
         table.add(title).padBottom(10).row();
         table.add(energyLabel).padBottom(5).row();
         table.add(commentLabel).padBottom(20).row();
-        table.add(feedButton).size(buttonSize).pad(5);
-        table.add(playButton).size(buttonSize).pad(5);
-        table.add(sleepButton).size(buttonSize).pad(5);
+        table.add(feedButton).pad(5).width(100).height(50);
+        table.add(playButton).pad(5).width(100).height(50);
+        table.add(sleepButton).pad(5).width(100).height(50);
     }
 
     private void toggleSleep() {
@@ -155,7 +143,6 @@ public class GameScreen extends ScreenAdapter {
     @Override
     public void render(float delta) {
         updateStatus();
-
         ScreenUtils.clear(0, 0, 0, 1);
         batch.begin();
         batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());

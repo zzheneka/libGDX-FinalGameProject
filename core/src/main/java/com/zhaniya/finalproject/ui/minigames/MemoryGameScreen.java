@@ -37,6 +37,7 @@ public class MemoryGameScreen extends ScreenAdapter {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
+        // Загрузка фона
         try {
             background = new Texture(Gdx.files.internal("minigames/memorygame/background.png"));
             System.out.println("Фон загружен успешно!");
@@ -45,10 +46,11 @@ public class MemoryGameScreen extends ScreenAdapter {
             background = new Texture(Gdx.files.internal("backgrounds/default_room.png"));
         }
 
+        // Загрузка рубашки карты
         try {
             cardBack = new Texture(Gdx.files.internal("minigames/memorygame/card_back.png"));
         } catch (Exception e) {
-            System.err.println("Ошибка загрузки рубашки карты: используем резервный фон.");
+            System.err.println("Ошибка загрузки рубашки карты.");
             cardBack = new Texture(Gdx.files.internal("backgrounds/default.png"));
         }
 
@@ -67,7 +69,7 @@ public class MemoryGameScreen extends ScreenAdapter {
             }
         }
 
-        // Перемешиваем пары
+        // Перемешиваем карты
         cardPairs = new Array<>();
         for (int i = 0; i < 10; i++) cardPairs.add(i);
         cardPairs.shuffle();
@@ -144,61 +146,38 @@ public class MemoryGameScreen extends ScreenAdapter {
     }
 
     private void showVictoryMessage() {
-        try {
-            // Создаем стиль метки с белым шрифтом
-            BitmapFont font = new BitmapFont();
-            Label.LabelStyle labelStyle = new Label.LabelStyle(font, Color.WHITE);
+        BitmapFont font = new BitmapFont();
+        Label.LabelStyle labelStyle = new Label.LabelStyle(font, Color.WHITE);
 
-            // Победное сообщение
-            Label victoryLabel = new Label("🎉 Победа! Все пары найдены!", labelStyle);
-            victoryLabel.setFontScale(2);
-            victoryLabel.setPosition(Gdx.graphics.getWidth() / 2f - 150, Gdx.graphics.getHeight() / 2f + 50);
-            stage.addActor(victoryLabel);
+        Label victoryLabel = new Label("🎉 Победа! Все пары найдены!", labelStyle);
+        victoryLabel.setFontScale(2);
 
-            // Загружаем текстуру кнопки "Back"
-            Texture buttonTexture;
-            try {
-                buttonTexture = new Texture(Gdx.files.internal("ui/buttons/back.png"));
-                System.out.println("Кнопка Back успешно загружена.");
-            } catch (Exception e) {
-                System.err.println("Ошибка при загрузке кнопки Back: " + e.getMessage());
-                buttonTexture = new Texture(Gdx.files.internal("ui/buttons/default_back.png")); // резервная кнопка
+        Table table = new Table();
+        table.setFillParent(true);
+        table.center();
+        table.add(victoryLabel).padBottom(20).row();
+
+        // Кнопка "Back" с текстурой
+        Texture buttonTexture = new Texture(Gdx.files.internal("buttoms/back.png"));
+        ImageButton backButton = new ImageButton(new TextureRegionDrawable(buttonTexture));
+        backButton.setSize(150, 50);
+        backButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new GameScreen(game, null));
+                System.out.println("Возврат на главный экран.");
             }
+        });
 
-            // Создаем стиль кнопки с использованием текстуры
-            TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
-            buttonStyle.up = new Image(buttonTexture).getDrawable();
-            buttonStyle.font = font;
-
-            // Кнопка "Back"
-            TextButton backButton = new TextButton("", buttonStyle); // Пустой текст, чтобы отображалась картинка
-            backButton.setSize(150, 50);
-            backButton.setPosition(Gdx.graphics.getWidth() / 2f - 75, Gdx.graphics.getHeight() / 2f - 50);
-
-            backButton.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    game.setScreen(new GameScreen(game, null));
-                    System.out.println("Возврат на главный экран.");
-                }
-            });
-
-            stage.addActor(backButton);
-        } catch (Exception e) {
-            System.err.println("Ошибка при создании кнопки: " + e.getMessage());
-        }
+        table.add(backButton).padTop(20);
+        stage.addActor(table);
     }
-
-
-
 
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
         batch.begin();
-        if (background != null) {
-            batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        }
+        batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         batch.end();
         stage.act(delta);
         stage.draw();
@@ -207,10 +186,10 @@ public class MemoryGameScreen extends ScreenAdapter {
     @Override
     public void dispose() {
         batch.dispose();
-        if (background != null) background.dispose();
-        if (cardBack != null) cardBack.dispose();
+        background.dispose();
+        cardBack.dispose();
         for (Texture card : cardFaces) {
-            if (card != null) card.dispose();
+            card.dispose();
         }
         stage.dispose();
     }
