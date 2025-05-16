@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.zhaniya.finalproject.model.FoodItem;
 import com.zhaniya.finalproject.model.pet.Pet;
 import com.zhaniya.finalproject.ui.GameScreen;
 
@@ -49,80 +50,68 @@ public class KitchenScreen implements Screen {
         fridgeClosedTexture = new Texture(Gdx.files.internal("ui/fridge_closed.png"));
         fridgeOpenTexture = new Texture(Gdx.files.internal("ui/fridge_open.png"));
 
-        // Создаем UI с кнопками
+        // Создаем UI с продуктами
         createUI();
     }
 
     private void createUI() {
         Table table = new Table();
         table.setFillParent(true);
-        table.bottom().pad(20);
+        table.top().pad(20);
         stage.addActor(table);
 
         BitmapFont font = new BitmapFont();
         Label.LabelStyle labelStyle = new Label.LabelStyle();
         labelStyle.font = font;
 
-        // Загрузка текстур кнопок
-        Texture feedTexture = new Texture(Gdx.files.internal("ui/buttons/feed_button.png"));
-        Texture playTexture = new Texture(Gdx.files.internal("ui/buttons/play_button.png"));
-        Texture sleepTexture = new Texture(Gdx.files.internal("ui/buttons/sleep_button.png"));
+        // Заголовок "Холодильник"
+        Label fridgeLabel = new Label("Холодильник", labelStyle);
+        table.add(fridgeLabel).padBottom(10).colspan(2).row();
 
-        // Стиль кнопок
-        TextButton.TextButtonStyle feedButtonStyle = new TextButton.TextButtonStyle();
-        feedButtonStyle.font = font;
-        feedButtonStyle.up = new Image(feedTexture).getDrawable();
+        // Добавляем продукты
+        for (Map.Entry<String, FoodItem> entry : kitchenManager.getFridge().entrySet()) {
+            String itemName = entry.getKey();
+            FoodItem item = entry.getValue();
 
-        TextButton.TextButtonStyle playButtonStyle = new TextButton.TextButtonStyle();
-        playButtonStyle.font = font;
-        playButtonStyle.up = new Image(playTexture).getDrawable();
+            Label foodLabel = new Label(itemName + ": " + item.getQuantity(), labelStyle);
 
-        TextButton.TextButtonStyle sleepButtonStyle = new TextButton.TextButtonStyle();
-        sleepButtonStyle.font = font;
-        sleepButtonStyle.up = new Image(sleepTexture).getDrawable();
+            // Добавляем обработчик нажатия на продукт
+            foodLabel.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    if (kitchenManager.consumeItem(itemName)) {
+                        pet.increaseEnergy(5);
+                        System.out.println("Питомец съел: " + itemName);
+                        foodLabel.setText(itemName + ": " + item.getQuantity());
+                    } else {
+                        System.out.println("Еда закончилась: " + itemName);
+                        foodLabel.setText(itemName + ": 0");
+                    }
+                }
+            });
 
-        // Создаем кнопки
-        TextButton feedButton = new TextButton("", feedButtonStyle);
-        TextButton playButton = new TextButton("", playButtonStyle);
-        TextButton sleepButton = new TextButton("", sleepButtonStyle);
-
-        // Логика кнопки "Feed"
-        feedButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                System.out.println("Кормление питомца!");
-                pet.increaseEnergy(10);
-                System.out.println("Питомец поел!");
-            }
-        });
-
-        // Логика кнопки "Play"
-        playButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new GameScreen(game, pet));
-                System.out.println("Возврат на главный экран.");
-            }
-        });
-
-        // Логика кнопки "Sleep"
-        sleepButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new GameScreen(game, pet));
-                System.out.println("Питомец уснул!");
-            }
-        });
-
-        // Добавляем кнопки на экран
-        table.add(feedButton).pad(10).width(150).height(50);
-        table.add(playButton).pad(10).width(150).height(50);
-        table.add(sleepButton).pad(10).width(150).height(50);
+            table.add(foodLabel).pad(5).left().row();
+        }
     }
 
-    @Override
-    public void show() {
-        System.out.println("Переход на экран кухни.");
+    private void handleInput() {
+        if (Gdx.input.justTouched()) {
+            int x = Gdx.input.getX();
+            int y = Gdx.graphics.getHeight() - Gdx.input.getY();
+            System.out.println("Клик: X=" + x + ", Y=" + y);
+
+            // Координаты холодильника
+            int fridgeX = 50;
+            int fridgeY = 100;
+            int fridgeWidth = (int) (fridgeClosedTexture.getWidth() * 0.3f);
+            int fridgeHeight = (int) (fridgeClosedTexture.getHeight() * 0.3f);
+
+            // Проверка клика по холодильнику
+            if (x >= fridgeX && x <= fridgeX + fridgeWidth && y >= fridgeY && y <= fridgeY + fridgeHeight) {
+                kitchenManager.toggleFridgeState();
+                System.out.println("Холодильник " + (kitchenManager.isFridgeOpen() ? "открыт!" : "закрыт!"));
+            }
+        }
     }
 
     @Override
@@ -135,7 +124,7 @@ public class KitchenScreen implements Screen {
 
         // Логика отображения холодильника
         Texture fridgeTexture = kitchenManager.isFridgeOpen() ? fridgeOpenTexture : fridgeClosedTexture;
-        batch.draw(fridgeTexture, -20, 50, fridgeTexture.getWidth() * 0.25f, fridgeTexture.getHeight() * 0.25f);
+        batch.draw(fridgeTexture, 50, 100, fridgeTexture.getWidth() * 0.3f, fridgeTexture.getHeight() * 0.3f);
 
         // Анимация питомца
         animationManager.render(batch);
@@ -146,27 +135,10 @@ public class KitchenScreen implements Screen {
         handleInput();
     }
 
-    private void handleInput() {
-        if (Gdx.input.justTouched()) {
-            int x = Gdx.input.getX();
-            int y = Gdx.graphics.getHeight() - Gdx.input.getY();
-            System.out.println("Клик: X=" + x + ", Y=" + y);
-        }
-    }
-
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
-
-    @Override
-    public void pause() {}
-
-    @Override
-    public void resume() {}
-
-    @Override
-    public void hide() {}
 
     @Override
     public void dispose() {
@@ -178,4 +150,16 @@ public class KitchenScreen implements Screen {
         stage.dispose();
         System.out.println("Ресурсы экрана кухни очищены.");
     }
+
+    @Override
+    public void show() {}
+
+    @Override
+    public void pause() {}
+
+    @Override
+    public void resume() {}
+
+    @Override
+    public void hide() {}
 }
