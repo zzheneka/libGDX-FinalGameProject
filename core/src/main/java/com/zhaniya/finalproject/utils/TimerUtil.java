@@ -25,6 +25,11 @@ public class TimerUtil { // Singleton Pattern
         return instance;
     }
 
+    // Метод startPetTimer для совместимости
+    public void startPetTimer(Pet pet) {
+        start(pet); // Вызываем основной метод start
+    }
+
     public void start(Pet pet) {
         stop();
 

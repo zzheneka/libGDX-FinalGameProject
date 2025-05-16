@@ -1,9 +1,13 @@
 package com.zhaniya.finalproject.model.pet;
 
+import com.zhaniya.finalproject.utils.TimerUtil;
+
 public class SleepingState extends PetState {
 
     public SleepingState(Pet pet) {
         super(pet);
+        TimerUtil.getInstance().startPetTimer(pet);
+
     }
 
     @Override

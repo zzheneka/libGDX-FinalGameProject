@@ -6,7 +6,8 @@ public class SickState extends PetState {
 
     public SickState(Pet pet) {
         super(pet);
-        TimerUtil.startPetTimer(pet);
+        TimerUtil.getInstance().startPetTimer(pet);
+
     }
 
     @Override

@@ -4,7 +4,8 @@ public class TiredState extends PetState {
 
     public TiredState(Pet pet) {
         super(pet);
-        TimerUtil.startPetTimer(pet);
+        TimerUtil.getInstance().startPetTimer(pet);
+
     }
 
     @Override

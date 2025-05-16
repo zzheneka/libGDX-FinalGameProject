@@ -5,7 +5,8 @@ public class HappyState extends PetState {
 
     public HappyState(Pet pet) {
         super(pet);
-        TimerUtil.startPetTimer(pet);
+        TimerUtil.getInstance().startPetTimer(pet);
+
     }
 
     @Override

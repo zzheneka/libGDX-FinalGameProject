@@ -18,6 +18,7 @@ public class MemoryGameScreen extends ScreenAdapter {
     private final Game game;
     private SpriteBatch batch;
     private Texture background;
+    private Texture fallbackBackground;
     private Texture cardBack;
     private Array<Texture> cardFaces;
     private Array<ImageButton> cardButtons;
@@ -34,16 +35,32 @@ public class MemoryGameScreen extends ScreenAdapter {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
-        // Загрузка фона и рубашки карт
-        background = new Texture("minigames/memorygame/background.png");
-        cardBack = new Texture("minigames/memorygame/card_back.png");
+        try {
+            // Загрузка фона и рубашки карт
+            background = new Texture(Gdx.files.internal("minigames/memorygame/background.png"));
+            cardBack = new Texture(Gdx.files.internal("minigames/memorygame/card_back.png"));
+            fallbackBackground = new Texture(Gdx.files.internal("backgrounds/default.png"));
+        } catch (Exception e) {
+            System.err.println("Ошибка загрузки фона или рубашки: " + e.getMessage());
+        }
+
+        // Если фон не загрузился, используем резервный фон
+        if (background == null) {
+            System.err.println("Фон не найден! Использую резервный фон.");
+            background = fallbackBackground;
+        }
 
         // Загрузка лицевых сторон карт
         cardFaces = new Array<>();
         for (int i = 1; i <= 5; i++) {
-            Texture card = new Texture("minigames/memorygame/card" + i + ".png");
-            cardFaces.add(card);
-            cardFaces.add(card); // Две одинаковые для пары
+            try {
+                Texture card = new Texture(Gdx.files.internal("minigames/memorygame/card" + i + ".png"));
+                cardFaces.add(card);
+                cardFaces.add(card); // Две одинаковые для пары
+                System.out.println("Загружено: card" + i + ".png");
+            } catch (Exception e) {
+                System.err.println("Ошибка загрузки карты: card" + i + ".png");
+            }
         }
 
         // Перемешиваем пары
@@ -96,12 +113,8 @@ public class MemoryGameScreen extends ScreenAdapter {
             int firstIndex = cardButtons.indexOf(firstCard, true);
             int secondIndex = cardButtons.indexOf(secondCard, true);
 
-            // Проверка совпадения
-            if (cardPairs.get(firstIndex) / 2 == cardPairs.get(secondIndex) / 2) {
-                System.out.println("Пара найдена!");
+            if ((cardPairs.get(firstIndex) / 2) == (cardPairs.get(secondIndex) / 2)) {
                 flippedCount += 2;
-
-                // Удаляем найденные карты с задержкой
                 Timer.schedule(new Timer.Task() {
                     @Override
                     public void run() {
@@ -110,13 +123,8 @@ public class MemoryGameScreen extends ScreenAdapter {
                     }
                 }, 0.5f);
 
-                // Проверка на победу
-                if (flippedCount == 10) {
-                    System.out.println("Победа! Все пары найдены!");
-                    showVictoryMessage();
-                }
+                if (flippedCount == 10) showVictoryMessage();
             } else {
-                // Переворот обратно через 1 секунду
                 Timer.schedule(new Timer.Task() {
                     @Override
                     public void run() {
@@ -153,6 +161,7 @@ public class MemoryGameScreen extends ScreenAdapter {
     public void dispose() {
         batch.dispose();
         background.dispose();
+        fallbackBackground.dispose();
         cardBack.dispose();
         for (Texture card : cardFaces) card.dispose();
         stage.dispose();

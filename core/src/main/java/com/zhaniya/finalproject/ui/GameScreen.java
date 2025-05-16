@@ -4,16 +4,16 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.zhaniya.finalproject.ui.minigames.MiniGameSelectionScreen;
 import com.zhaniya.finalproject.ui.managers.KitchenScreen;
-
 
 public class GameScreen extends ScreenAdapter {
     private final Game game;
@@ -32,10 +32,10 @@ public class GameScreen extends ScreenAdapter {
         Gdx.input.setInputProcessor(stage);
 
         // Загрузка текстур
-        backgroundTexture = new Texture("backgrounds/playground.png");
-        sleepTexture = new Texture("backgrounds/sleep_with_dragon.png");
-        playgroundTexture = new Texture("backgrounds/playground.png");
-        petTexture = new Texture("pets/standing.png");
+        backgroundTexture = new Texture(Gdx.files.internal("backgrounds/playground.png"));
+        sleepTexture = new Texture(Gdx.files.internal("backgrounds/sleep_with_dragon.png"));
+        playgroundTexture = new Texture(Gdx.files.internal("backgrounds/playground.png"));
+        petTexture = new Texture(Gdx.files.internal("dragon/happy/frame1.png"));
 
         createUI();
     }
@@ -46,12 +46,23 @@ public class GameScreen extends ScreenAdapter {
         table.top().pad(20);
         stage.addActor(table);
 
-        Label title = new Label("Tamagotchi+", new Skin(Gdx.files.internal("uiskin.json")));
+        // Создаем стиль текста и кнопок без использования uiskin.json
+        BitmapFont font = new BitmapFont();
+        Label.LabelStyle labelStyle = new Label.LabelStyle();
+        labelStyle.font = font;
+
+        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
+        buttonStyle.font = font;
+        buttonStyle.up = new Image(new Texture(Gdx.files.internal("dragon/happy/frame1.png"))).getDrawable();
+
+        // Заголовок
+        Label title = new Label("Tamagotchi+", labelStyle);
         title.setFontScale(2);
 
-        TextButton feedButton = new TextButton("Кормить", new Skin(Gdx.files.internal("uiskin.json")));
-        TextButton playButton = new TextButton("Играть", new Skin(Gdx.files.internal("uiskin.json")));
-        TextButton sleepButton = new TextButton("Спать", new Skin(Gdx.files.internal("uiskin.json")));
+        // Кнопки
+        TextButton feedButton = new TextButton("Кормить", buttonStyle);
+        TextButton playButton = new TextButton("Играть", buttonStyle);
+        TextButton sleepButton = new TextButton("Спать", buttonStyle);
 
         // Логика кнопки "Кормить"
         feedButton.addListener(new ClickListener() {
@@ -78,11 +89,11 @@ public class GameScreen extends ScreenAdapter {
                 isSleeping = !isSleeping;
                 if (isSleeping) {
                     backgroundTexture = sleepTexture;
-                    petTexture = new Texture("pets/sleeping.png");
+                    petTexture = new Texture(Gdx.files.internal("dragon/happy/frame3.png"));
                     System.out.println("Питомец уснул!");
                 } else {
                     backgroundTexture = playgroundTexture;
-                    petTexture = new Texture("pets/standing.png");
+                    petTexture = new Texture(Gdx.files.internal("dragon/happy/frame1.png"));
                     System.out.println("Питомец проснулся!");
                 }
             }
@@ -106,7 +117,7 @@ public class GameScreen extends ScreenAdapter {
         batch.begin();
         batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-        // Рисуем питомца
+        // Рисуем питомца на экране
         batch.draw(petTexture, Gdx.graphics.getWidth() / 2f - 64, 100, 128, 128);
         batch.end();
 

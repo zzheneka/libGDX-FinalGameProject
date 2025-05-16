@@ -81,17 +81,25 @@ public class Pet implements CloneablePet {
         return state != null && stateClass.isInstance(state);
     }
 
-    public PetState getState() { return state; }
+    public PetState getState() {
+        return state;
+    }
 
-    public String getName() { return name; }
+    public String getName() {
+        return name;
+    }
 
-    public int getEnergy() { return energy; }
+    public int getEnergy() {
+        return energy;
+    }
 
     public void setEnergy(int energy) {
         this.energy = Math.max(0, Math.min(100, energy));
     }
 
-    public int getHealth() { return health; }
+    public int getHealth() {
+        return health;
+    }
 
     public void setHealth(int health) {
         this.health = Math.max(0, Math.min(100, health));
@@ -101,29 +109,39 @@ public class Pet implements CloneablePet {
         return mood != null ? mood : (state != null ? state.getMood() : "Unknown");
     }
 
-    public void setMood(String mood) { this.mood = mood; }
+    public void setMood(String mood) {
+        this.mood = mood;
+    }
 
-    public long getLastFedTime() { return lastFedTime; }
+    public long getLastFedTime() {
+        return lastFedTime;
+    }
 
     public void updateLastFedTime() {
         this.lastFedTime = System.currentTimeMillis();
     }
 
-    public int getIntelligence() { return intelligence; }
+    public int getIntelligence() {
+        return intelligence;
+    }
 
     public void increaseIntelligence(int amount) {
         this.intelligence = Math.min(100, intelligence + amount);
         checkLevelUp();
     }
 
-    public int getTrustLevel() { return trustLevel; }
+    public int getTrustLevel() {
+        return trustLevel;
+    }
 
     public void increaseTrust(int amount) {
         this.trustLevel = Math.min(100, trustLevel + amount);
         checkLevelUp();
     }
 
-    public int getLevel() { return level; }
+    public int getLevel() {
+        return level;
+    }
 
     private void checkLevelUp() {
         if (intelligence >= 20 && trustLevel >= 20 && level == 1) {
@@ -201,5 +219,10 @@ public class Pet implements CloneablePet {
 
     public boolean isFed() {
         return (System.currentTimeMillis() - lastFedTime) < 5000;
+    }
+
+    // Добавленный метод для получения типа питомца
+    public PetType getType() {
+        return type;
     }
 }
