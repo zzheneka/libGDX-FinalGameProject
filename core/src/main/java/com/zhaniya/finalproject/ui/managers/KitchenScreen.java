@@ -124,7 +124,7 @@ public class KitchenScreen implements Screen {
 
         // Логика отображения холодильника
         Texture fridgeTexture = kitchenManager.isFridgeOpen() ? fridgeOpenTexture : fridgeClosedTexture;
-        batch.draw(fridgeTexture, 50, 100, fridgeTexture.getWidth() * 0.3f, fridgeTexture.getHeight() * 0.3f);
+        batch.draw(fridgeTexture, -20, 30, fridgeTexture.getWidth() * 0.3f, fridgeTexture.getHeight() * 0.3f);
 
         // Анимация питомца
         animationManager.render(batch);
