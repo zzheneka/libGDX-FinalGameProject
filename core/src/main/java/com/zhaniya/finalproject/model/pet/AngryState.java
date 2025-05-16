@@ -4,7 +4,9 @@ public class AngryState extends PetState {
 
     public AngryState(Pet pet) {
         super(pet);
+
     }
+
 
     @Override
     public void handle() {

@@ -4,12 +4,13 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.zhaniya.finalproject.ui.minigames.MiniGameSelectionScreen;
 import com.zhaniya.finalproject.ui.managers.KitchenScreen;
@@ -29,6 +30,10 @@ public class GameScreen extends ScreenAdapter {
     private boolean isSleeping = false;
     private Pet pet;
 
+    // Метки для энергии и комментария
+    private Label energyLabel;
+    private Label commentLabel;
+
     public GameScreen(Game game, Pet pet) {
         this.game = game;
         this.pet = pet;
@@ -37,10 +42,10 @@ public class GameScreen extends ScreenAdapter {
         Gdx.input.setInputProcessor(stage);
 
         // Загрузка текстур
-        backgroundTexture = new Texture("backgrounds/playground.png");
-        sleepTexture = new Texture("backgrounds/sleep_with_dragon.png");
-        playgroundTexture = new Texture("backgrounds/playground.png");
-        petTexture = new Texture("pets/standing.png");
+        backgroundTexture = new Texture(Gdx.files.internal("backgrounds/playground.png"));
+        sleepTexture = new Texture(Gdx.files.internal("backgrounds/sleep_with_dragon.png"));
+        playgroundTexture = new Texture(Gdx.files.internal("backgrounds/playground.png"));
+        petTexture = new Texture(Gdx.files.internal("dragon/happy/frame1.png"));
 
         createUI();
     }
@@ -48,12 +53,26 @@ public class GameScreen extends ScreenAdapter {
     private void createUI() {
         Table table = new Table();
         table.setFillParent(true);
-        table.top().pad(20);
+        table.bottom().pad(20);
         stage.addActor(table);
 
-        Label title = new Label("Tamagotchi+", new Skin(Gdx.files.internal("uiskin.json")));
+        BitmapFont font = new BitmapFont();
+        Label.LabelStyle labelStyle = new Label.LabelStyle();
+        labelStyle.font = font;
+
+        // Заголовок
+        Label title = new Label("Tamagotchi+", labelStyle);
         title.setFontScale(2);
 
+        // Метка энергии
+        energyLabel = new Label("Energy: " + pet.getEnergy(), labelStyle);
+        energyLabel.setFontScale(1.5f);
+
+        // Метка комментария
+        commentLabel = new Label("Я счастлив!", labelStyle);
+        commentLabel.setFontScale(1.2f);
+
+        // Кнопки
         TextButton feedButton = new TextButton("Кормить", new Skin(Gdx.files.internal("uiskin.json")));
         TextButton playButton = new TextButton("Играть", new Skin(Gdx.files.internal("uiskin.json")));
         TextButton sleepButton = new TextButton("Спать", new Skin(Gdx.files.internal("uiskin.json")));
@@ -82,17 +101,7 @@ public class GameScreen extends ScreenAdapter {
         sleepButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                isSleeping = !isSleeping;
-                new SleepCommand(pet).execute();
-                if (isSleeping) {
-                    backgroundTexture = sleepTexture;
-                    petTexture = new Texture("pets/sleeping.png");
-                    System.out.println("Питомец уснул!");
-                } else {
-                    backgroundTexture = playgroundTexture;
-                    petTexture = new Texture("pets/standing.png");
-                    System.out.println("Питомец проснулся!");
-                }
+                toggleSleep();
             }
         });
 
@@ -106,35 +115,46 @@ public class GameScreen extends ScreenAdapter {
         });
 
         // Добавляем элементы на экран
-        table.add(title).padBottom(20).row();
+        table.add(title).padBottom(10).row();
+        table.add(energyLabel).padBottom(5).row();
+        table.add(commentLabel).padBottom(20).row();
         table.add(feedButton).pad(10).width(200).height(50).row();
         table.add(playButton).pad(10).width(200).height(50).row();
         table.add(sleepButton).pad(10).width(200).height(50).row();
         table.add(miniGamesButton).pad(10).width(200).height(50).row();
     }
 
-    @Override
-    public void show() {
-        System.out.println("Главный экран игры отображён.");
+    private void toggleSleep() {
+        isSleeping = !isSleeping;
+        backgroundTexture = isSleeping ? sleepTexture : playgroundTexture;
+        petTexture = new Texture(Gdx.files.internal("dragon/happy/frame" + (isSleeping ? "3" : "1") + ".png"));
+        System.out.println("Питомец " + (isSleeping ? "уснул" : "проснулся") + "!");
+    }
+
+    private void updateStatus() {
+        energyLabel.setText("Energy: " + pet.getEnergy());
+        if (pet.getEnergy() >= 50) {
+            commentLabel.setText("Я счастлив!");
+        } else if (pet.getEnergy() >= 20) {
+            commentLabel.setText("Я немного устал...");
+        } else if (pet.getEnergy() >= 10) {
+            commentLabel.setText("Я устал... Хочу спать!");
+        } else {
+            commentLabel.setText("Энергия на исходе!");
+            backgroundTexture = sleepTexture;
+        }
     }
 
     @Override
     public void render(float delta) {
+        updateStatus();
         ScreenUtils.clear(0, 0, 0, 1);
         batch.begin();
         batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        // Рисуем питомца
         batch.draw(petTexture, Gdx.graphics.getWidth() / 2f - 64, 100, 128, 128);
         batch.end();
-
         stage.act(delta);
         stage.draw();
-    }
-
-    @Override
-    public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
     }
 
     @Override

@@ -6,7 +6,8 @@ public class HungryState extends PetState {
 
     public HungryState(Pet pet) {
         super(pet);
-        TimerUtil.startPetTimer(pet);
+        TimerUtil.getInstance().startPetTimer(pet);
+
     }
 
     @Override
