@@ -13,7 +13,10 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.zhaniya.finalproject.ui.minigames.MiniGameSelectionScreen;
 import com.zhaniya.finalproject.ui.managers.KitchenScreen;
-
+import com.zhaniya.finalproject.model.pet.Pet;
+import com.zhaniya.finalproject.commands.FeedCommand;
+import com.zhaniya.finalproject.commands.PlayCommand;
+import com.zhaniya.finalproject.commands.SleepCommand;
 
 public class GameScreen extends ScreenAdapter {
     private final Game game;
@@ -24,9 +27,11 @@ public class GameScreen extends ScreenAdapter {
     private Texture playgroundTexture;
     private Stage stage;
     private boolean isSleeping = false;
+    private Pet pet;
 
-    public GameScreen(Game game, Object o) {
+    public GameScreen(Game game, Pet pet) {
         this.game = game;
+        this.pet = pet;
         batch = new SpriteBatch();
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
@@ -52,13 +57,15 @@ public class GameScreen extends ScreenAdapter {
         TextButton feedButton = new TextButton("Кормить", new Skin(Gdx.files.internal("uiskin.json")));
         TextButton playButton = new TextButton("Играть", new Skin(Gdx.files.internal("uiskin.json")));
         TextButton sleepButton = new TextButton("Спать", new Skin(Gdx.files.internal("uiskin.json")));
+        TextButton miniGamesButton = new TextButton("Мини-игры", new Skin(Gdx.files.internal("uiskin.json")));
 
         // Логика кнопки "Кормить"
         feedButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new KitchenScreen(game, null));
-                System.out.println("Переход на экран кухни.");
+                new FeedCommand(pet).execute();
+                game.setScreen(new KitchenScreen(game, pet));
+                System.out.println("Питомец покормлен!");
             }
         });
 
@@ -66,8 +73,8 @@ public class GameScreen extends ScreenAdapter {
         playButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new MiniGameSelectionScreen(game));
-                System.out.println("Переход на экран выбора мини-игр.");
+                new PlayCommand(pet).execute();
+                System.out.println("Питомец играет!");
             }
         });
 
@@ -76,6 +83,7 @@ public class GameScreen extends ScreenAdapter {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 isSleeping = !isSleeping;
+                new SleepCommand(pet).execute();
                 if (isSleeping) {
                     backgroundTexture = sleepTexture;
                     petTexture = new Texture("pets/sleeping.png");
@@ -88,11 +96,21 @@ public class GameScreen extends ScreenAdapter {
             }
         });
 
+        // Кнопка для перехода к мини-играм
+        miniGamesButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new MiniGameSelectionScreen(game));
+                System.out.println("Переход на экран мини-игр.");
+            }
+        });
+
         // Добавляем элементы на экран
         table.add(title).padBottom(20).row();
         table.add(feedButton).pad(10).width(200).height(50).row();
         table.add(playButton).pad(10).width(200).height(50).row();
         table.add(sleepButton).pad(10).width(200).height(50).row();
+        table.add(miniGamesButton).pad(10).width(200).height(50).row();
     }
 
     @Override
@@ -127,5 +145,6 @@ public class GameScreen extends ScreenAdapter {
         playgroundTexture.dispose();
         petTexture.dispose();
         stage.dispose();
+        System.out.println("Ресурсы экрана игры очищены.");
     }
 }
