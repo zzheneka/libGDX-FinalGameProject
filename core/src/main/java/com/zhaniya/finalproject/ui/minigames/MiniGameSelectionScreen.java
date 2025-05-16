@@ -2,7 +2,6 @@ package com.zhaniya.finalproject.ui.minigames;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
@@ -24,7 +23,6 @@ public class MiniGameSelectionScreen extends ScreenAdapter {
 
     // Массив с названиями игр
     private final String[] gameNames = {"Game 1", "Game 2", "Game 3"};
-    private final String[] buttonFiles = {"buttons/game1.png", "buttons/game2.png", "buttons/game3.png"};
 
     public MiniGameSelectionScreen(Game game) {
         this.game = game;
@@ -52,10 +50,8 @@ public class MiniGameSelectionScreen extends ScreenAdapter {
         table.add(title).padBottom(40).row();
 
         // Динамическое создание кнопок на основе массива названий игр
-        for (int i = 0; i < gameNames.length; i++) {
-            String gameName = gameNames[i];
-            String buttonFile = buttonFiles[i];
-            TextButton gameButton = createGameButton(gameName, buttonFile);
+        for (String gameName : gameNames) {
+            TextButton gameButton = createGameButton(gameName);
 
             // Обработка нажатия на кнопку
             gameButton.addListener(new ClickListener() {
@@ -70,7 +66,7 @@ public class MiniGameSelectionScreen extends ScreenAdapter {
         }
 
         // Кнопка "Назад" для возврата на главный экран
-        TextButton backButton = createGameButton("Назад", "buttons/back.png");
+        TextButton backButton = createGameButton("Назад");
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -103,23 +99,10 @@ public class MiniGameSelectionScreen extends ScreenAdapter {
         }
     }
 
-    // Метод для создания кнопки с текстурой
-    private TextButton createGameButton(String text, String texturePath) {
-        BitmapFont font = new BitmapFont();
+    // Метод для создания кнопки с текстом
+    private TextButton createGameButton(String text) {
         TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
         buttonStyle.font = font;
-
-        try {
-            // Загружаем текстуру кнопки
-            Texture buttonTexture = new Texture(Gdx.files.internal(texturePath));
-            buttonStyle.up = new Image(buttonTexture).getDrawable();
-            buttonStyle.down = new Image(buttonTexture).getDrawable();
-        } catch (Exception e) {
-            System.err.println("Ошибка загрузки кнопки: " + texturePath);
-            e.printStackTrace();
-            buttonStyle.up = null;
-            buttonStyle.down = null;
-        }
 
         TextButton button = new TextButton(text, buttonStyle);
         button.getLabel().setFontScale(1.5f);  // Увеличенный текст на кнопке

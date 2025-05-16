@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+
 public class MemoryGameScreen extends ScreenAdapter {
     private final Game game;
     private SpriteBatch batch;
@@ -36,18 +37,18 @@ public class MemoryGameScreen extends ScreenAdapter {
         Gdx.input.setInputProcessor(stage);
 
         try {
-            // Загрузка фона и рубашки карт
             background = new Texture(Gdx.files.internal("minigames/memorygame/background.png"));
-            cardBack = new Texture(Gdx.files.internal("minigames/memorygame/card_back.png"));
-            fallbackBackground = new Texture(Gdx.files.internal("backgrounds/default.png"));
+            System.out.println("Фон загружен успешно!");
         } catch (Exception e) {
-            System.err.println("Ошибка загрузки фона или рубашки: " + e.getMessage());
+            System.err.println("Ошибка загрузки: minigames/memorygame/background.png, используем резервный фон.");
+            background = new Texture(Gdx.files.internal("backgrounds/default_room.png"));
         }
 
-        // Если фон не загрузился, используем резервный фон
-        if (background == null) {
-            System.err.println("Фон не найден! Использую резервный фон.");
-            background = fallbackBackground;
+        try {
+            cardBack = new Texture(Gdx.files.internal("minigames/memorygame/card_back.png"));
+        } catch (Exception e) {
+            System.err.println("Ошибка загрузки рубашки карты: backgrounds/default.png");
+            cardBack = new Texture(Gdx.files.internal("backgrounds/default.png"));
         }
 
         // Загрузка лицевых сторон карт
@@ -56,10 +57,12 @@ public class MemoryGameScreen extends ScreenAdapter {
             try {
                 Texture card = new Texture(Gdx.files.internal("minigames/memorygame/card" + i + ".png"));
                 cardFaces.add(card);
-                cardFaces.add(card); // Две одинаковые для пары
+                cardFaces.add(card);
                 System.out.println("Загружено: card" + i + ".png");
             } catch (Exception e) {
                 System.err.println("Ошибка загрузки карты: card" + i + ".png");
+                cardFaces.add(cardBack); // Используем рубашку в случае ошибки
+                cardFaces.add(cardBack);
             }
         }
 
@@ -151,7 +154,9 @@ public class MemoryGameScreen extends ScreenAdapter {
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
         batch.begin();
-        batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        if (background != null) {
+            batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        }
         batch.end();
         stage.act(delta);
         stage.draw();
@@ -160,10 +165,11 @@ public class MemoryGameScreen extends ScreenAdapter {
     @Override
     public void dispose() {
         batch.dispose();
-        background.dispose();
-        fallbackBackground.dispose();
-        cardBack.dispose();
-        for (Texture card : cardFaces) card.dispose();
+        if (background != null) background.dispose();
+        if (cardBack != null) cardBack.dispose();
+        for (Texture card : cardFaces) {
+            if (card != null) card.dispose();
+        }
         stage.dispose();
     }
 }
