@@ -15,6 +15,8 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.zhaniya.finalproject.ui.minigames.MiniGameSelectionScreen;
 import com.zhaniya.finalproject.ui.managers.KitchenScreen;
 import com.zhaniya.finalproject.model.pet.Pet;
+import com.zhaniya.finalproject.ui.managers.CleanScreen;
+
 
 public class GameScreen extends ScreenAdapter {
     private final Game game;
@@ -67,6 +69,7 @@ public class GameScreen extends ScreenAdapter {
         Texture feedTexture = new Texture(Gdx.files.internal("ui/buttons/feed_button.png"));
         Texture playTexture = new Texture(Gdx.files.internal("ui/buttons/play_button.png"));
         Texture sleepTexture = new Texture(Gdx.files.internal("ui/buttons/sleep_button.png"));
+        Texture cleanTexture = new Texture(Gdx.files.internal("ui/buttons/clean_button.png"));
 
         TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
         buttonStyle.font = font;
@@ -83,9 +86,22 @@ public class GameScreen extends ScreenAdapter {
         sleepButtonStyle.font = font;
         sleepButtonStyle.up = new Image(sleepTexture).getDrawable();
 
+        TextButton.TextButtonStyle cleanButtonStyle = new TextButton.TextButtonStyle();
+        cleanButtonStyle.font = font;
+        cleanButtonStyle.up = new Image(cleanTexture).getDrawable();
+
         TextButton feedButton = new TextButton("", feedButtonStyle);
         TextButton playButton = new TextButton("", playButtonStyle);
         TextButton sleepButton = new TextButton("", sleepButtonStyle);
+        TextButton cleanButton = new TextButton("", cleanButtonStyle);
+
+        cleanButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new CleanScreen(game));
+                System.out.println("Переход на экран чистки.");
+            }
+        });
 
         feedButton.addListener(new ClickListener() {
             @Override
@@ -116,6 +132,7 @@ public class GameScreen extends ScreenAdapter {
         table.add(feedButton).pad(5).width(100).height(50);
         table.add(playButton).pad(5).width(100).height(50);
         table.add(sleepButton).pad(5).width(100).height(50);
+        table.add(cleanButton).pad(5).width(100).height(50);
     }
 
     private void toggleSleep() {
