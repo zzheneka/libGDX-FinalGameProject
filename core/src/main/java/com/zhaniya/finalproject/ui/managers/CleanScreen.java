@@ -7,11 +7,18 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+
 
 public class CleanScreen implements Screen {
     private Game game;
@@ -23,6 +30,9 @@ public class CleanScreen implements Screen {
     private Texture currentBackground;
 
     private boolean isClean;
+
+    private Image bathroom;
+
 
     public CleanScreen(Game game) {
         this.game = game;
@@ -37,36 +47,93 @@ public class CleanScreen implements Screen {
         currentBackground = dirtyBackground;
         isClean = false;
 
-        // Создаем изображение ванной комнаты
-        Image bathroom = new Image(currentBackground);
+        bathroom = new Image(new TextureRegionDrawable(new TextureRegion(currentBackground)));
         bathroom.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        // Слушатель нажатия на ванну
         bathroom.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 toggleCleaning();
             }
         });
-
+        bathroom.setZIndex(0);
         stage.addActor(bathroom);
+
+        createUI();
     }
+
+    private void createUI() {
+        Table table = new Table();
+        table.setFillParent(true);
+        table.bottom().padBottom(20);
+        stage.addActor(table);
+
+        // Загрузка текстур для кнопок
+        Texture feedTexture = new Texture(Gdx.files.internal("ui/buttons/feed_button.png"));
+        Texture playTexture = new Texture(Gdx.files.internal("ui/buttons/play_button.png"));
+        Texture sleepTexture = new Texture(Gdx.files.internal("ui/buttons/sleep_button.png"));
+        Texture cleanTexture = new Texture(Gdx.files.internal("ui/buttons/clean_button.png"));
+
+// Создаем кнопки на основе изображений
+        ImageButton feedButton = new ImageButton(new TextureRegionDrawable(new TextureRegion(feedTexture)));
+        ImageButton playButton = new ImageButton(new TextureRegionDrawable(new TextureRegion(playTexture)));
+        ImageButton sleepButton = new ImageButton(new TextureRegionDrawable(new TextureRegion(sleepTexture)));
+        ImageButton cleanButton = new ImageButton(new TextureRegionDrawable(new TextureRegion(cleanTexture)));
+
+        // Добавляем слушатели на кнопки
+        feedButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                System.out.println("Feed нажата");
+            }
+        });
+
+        playButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                System.out.println("Play нажата");
+            }
+        });
+
+        sleepButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                System.out.println("Sleep нажата");
+            }
+        });
+
+        cleanButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                System.out.println("Clean нажата");
+            }
+        });
+
+
+
+        table.add(feedButton).pad(15).size(110, 80);
+        table.add(playButton).pad(15).size(110, 80);
+        table.add(sleepButton).pad(15).size(110, 80);
+        table.add(cleanButton).pad(15).size(110, 80);
+
+        table.setZIndex(1);
+
+    }
+
+
+
 
     // Метод смены фона при клике
     private void toggleCleaning() {
         if (!isClean) {
             System.out.println("Чистим ванную...");
-            // Таймер на 2 секунды для смены фона
-            Timer.schedule(new Timer.Task() {
-                @Override
-                public void run() {
-                    currentBackground = cleanBackground;
-                    isClean = true;
-                    System.out.println("Ванная комната чистая!");
-                }
-            }, 2); // Задержка в 2 секунды перед сменой
+            currentBackground = cleanBackground;  // Меняем фон сразу
+            isClean = true;  // Обновляем состояние
+
+            bathroom.setDrawable(new TextureRegionDrawable(new TextureRegion(currentBackground)));
+            System.out.println("Ванная комната чистая!");
         }
     }
+
 
     @Override
     public void show() {
