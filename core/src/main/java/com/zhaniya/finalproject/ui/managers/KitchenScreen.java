@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -28,6 +29,7 @@ public class KitchenScreen implements Screen {
     private Texture kitchenTexture;
     private Texture fridgeClosedTexture;
     private Texture fridgeOpenTexture;
+    private Texture backTexture;
 
     private Pet pet;
 
@@ -49,30 +51,40 @@ public class KitchenScreen implements Screen {
         kitchenTexture = new Texture(Gdx.files.internal("backgrounds/kitchen.png"));
         fridgeClosedTexture = new Texture(Gdx.files.internal("ui/fridge_closed.png"));
         fridgeOpenTexture = new Texture(Gdx.files.internal("ui/fridge_open.png"));
+        backTexture = new Texture(Gdx.files.internal("buttoms/back.png"));
 
-        // Создаем UI с продуктами
+        // Создаем UI
         createUI();
     }
 
     private void createUI() {
         Table table = new Table();
         table.setFillParent(true);
-        table.top().pad(20);
+        table.bottom().right().pad(20);
         stage.addActor(table);
 
+        // Кнопка Back в правом нижнем углу
+        ImageButton backButton = createButton(backTexture);
+        backButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new GameScreen(game, pet));
+                System.out.println("Возврат на главный экран!");
+            }
+        });
+
+        // Добавляем кнопку "Back" в правый нижний угол
+        table.add(backButton).pad(5).size(100, 50).bottom().right().row();
+
+        // Добавляем продукты из холодильника
         BitmapFont font = new BitmapFont();
-        Label.LabelStyle labelStyle = new Label.LabelStyle();
-        labelStyle.font = font;
+        Label.LabelStyle labelStyle = new Label.LabelStyle(font, com.badlogic.gdx.graphics.Color.WHITE);
 
-        // Заголовок "Холодильник"
-        Label fridgeLabel = new Label("Холодильник", labelStyle);
-        table.add(fridgeLabel).padBottom(10).colspan(2).row();
-
-        // Добавляем продукты
         for (Map.Entry<String, FoodItem> entry : kitchenManager.getFridge().entrySet()) {
             String itemName = entry.getKey();
             FoodItem item = entry.getValue();
 
+            // Создаем метку с продуктом
             Label foodLabel = new Label(itemName + ": " + item.getQuantity(), labelStyle);
 
             // Добавляем обработчик нажатия на продукт
@@ -87,11 +99,29 @@ public class KitchenScreen implements Screen {
                         System.out.println("Еда закончилась: " + itemName);
                         foodLabel.setText(itemName + ": 0");
                     }
+
+                    // Эффект уменьшения при нажатии
+                    foodLabel.setFontScale(0.8f); // уменьшить при нажатии
+                    Gdx.app.postRunnable(() -> {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        foodLabel.setFontScale(1.0f); // вернуть размер
+                    });
                 }
             });
 
             table.add(foodLabel).pad(5).left().row();
         }
+    }
+
+    private ImageButton createButton(Texture texture) {
+        ImageButton.ImageButtonStyle buttonStyle = new ImageButton.ImageButtonStyle();
+        buttonStyle.up = new TextureRegionDrawable(new TextureRegion(texture));
+        buttonStyle.down = new TextureRegionDrawable(new TextureRegion(texture));
+        return new ImageButton(buttonStyle);
     }
 
     private void handleInput() {
@@ -147,6 +177,7 @@ public class KitchenScreen implements Screen {
         kitchenTexture.dispose();
         fridgeClosedTexture.dispose();
         fridgeOpenTexture.dispose();
+        backTexture.dispose();
         stage.dispose();
         System.out.println("Ресурсы экрана кухни очищены.");
     }
