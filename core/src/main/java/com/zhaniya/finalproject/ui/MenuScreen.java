@@ -14,6 +14,10 @@ public class MenuScreen implements Screen {
     private Rectangle startButtonBounds;
     private BitmapFont font;
 
+    // Переменные для анимации кнопки
+    private float scale;
+    private boolean growing;
+
     public MenuScreen(Main game) {
         this.game = game;
     }
@@ -30,33 +34,65 @@ public class MenuScreen implements Screen {
             (Gdx.graphics.getHeight() - 100) / 2f, // Y центр
             200, 80 // Ширина и высота кнопки
         );
+
+        // Начальные параметры анимации
+        scale = 1.0f;
+        growing = true;
     }
 
     @Override
     public void render(float delta) {
         ScreenUtils.clear(1, 1, 1, 1); // Белый фон
 
+        // Логика анимации кнопки
+        if (growing) {
+            scale += delta * 0.5f;
+            if (scale >= 1.2f) growing = false;
+        } else {
+            scale -= delta * 0.5f;
+            if (scale <= 1.0f) growing = true;
+        }
+
         batch.begin();
 
-        font.draw(batch, "Добро пожаловать в игру!", Gdx.graphics.getWidth() / 2f - 200, Gdx.graphics.getHeight() - 100);
-        batch.draw(startButton, startButtonBounds.x, startButtonBounds.y, startButtonBounds.width, startButtonBounds.height);
+        // Отрисовка текста
+        font.draw(batch, "Добро пожаловать в игру!",
+            Gdx.graphics.getWidth() / 2f - 200,
+            Gdx.graphics.getHeight() - 100);
+
+        // Вычисляем размеры и координаты кнопки с учетом анимации
+        float buttonWidth = startButtonBounds.width * scale;
+        float buttonHeight = startButtonBounds.height * scale;
+        float buttonX = startButtonBounds.x - (buttonWidth - startButtonBounds.width) / 2;
+        float buttonY = startButtonBounds.y - (buttonHeight - startButtonBounds.height) / 2;
+
+        // Отрисовка пульсирующей кнопки
+        batch.draw(startButton, buttonX, buttonY, buttonWidth, buttonHeight);
         batch.end();
 
+        // Проверка на нажатие кнопки
         if (Gdx.input.justTouched()) {
             float x = Gdx.input.getX();
             float y = Gdx.graphics.getHeight() - Gdx.input.getY();
 
-            if (startButtonBounds.contains(x, y)) {
+            if (x >= buttonX && x <= buttonX + buttonWidth && y >= buttonY && y <= buttonY + buttonHeight) {
                 game.setScreen(new StartScreen(game));
                 dispose();
             }
         }
     }
 
-    @Override public void resize(int width, int height) {}
-    @Override public void pause() {}
-    @Override public void resume() {}
-    @Override public void hide() {}
+    @Override
+    public void resize(int width, int height) {}
+
+    @Override
+    public void pause() {}
+
+    @Override
+    public void resume() {}
+
+    @Override
+    public void hide() {}
 
     @Override
     public void dispose() {

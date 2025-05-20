@@ -15,7 +15,6 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.zhaniya.finalproject.model.pet.Pet;
 import com.zhaniya.finalproject.ui.GameScreen;
-import com.zhaniya.finalproject.ui.minigames.MemoryGameScreen;
 
 public class MiniGameSelectionScreen extends ScreenAdapter {
     private final Pet pet;
@@ -36,27 +35,20 @@ public class MiniGameSelectionScreen extends ScreenAdapter {
         Table table = new Table();
         table.setFillParent(true);
 
-        // Загрузка текстуры кнопки
-        Texture buttonTexture;
-        try {
-            buttonTexture = new Texture(Gdx.files.internal("buttoms/back.png"));
-            System.out.println("Кнопка Memory Game успешно загружена.");
-        } catch (Exception e) {
-            System.err.println("Ошибка при загрузке кнопки Memory Game: " + e.getMessage());
-            buttonTexture = new Texture(Gdx.files.internal("buttoms/default_back.png")); // резервная кнопка
-        }
+        // Загрузка текстуры кнопки "Back"
+        Texture backButtonTexture = new Texture(Gdx.files.internal("buttoms/back.png"));
 
         // Создаем кнопку через текстуру
-        ImageButton memoryGameButton = new ImageButton(new TextureRegionDrawable(buttonTexture));
-        memoryGameButton.addListener(new ClickListener() {
+        ImageButton backButton = new ImageButton(new TextureRegionDrawable(backButtonTexture));
+        backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new MemoryGameScreen(game));
-                System.out.println("Запущена мини-игра Memory Game");
+                game.setScreen(new GameScreen(game, pet));
+                System.out.println("Возврат на экран игры.");
             }
         });
 
-        table.add(memoryGameButton).pad(10);
+        table.add(backButton).pad(10);
         stage.addActor(table);
     }
 
@@ -79,5 +71,8 @@ public class MiniGameSelectionScreen extends ScreenAdapter {
         if (batch != null) {
             batch.dispose();
         }
+    }
+
+    public void endGame() {
     }
 }

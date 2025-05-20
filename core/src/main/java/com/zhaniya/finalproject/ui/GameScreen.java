@@ -12,10 +12,12 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.zhaniya.finalproject.ui.minigames.MemoryGameScreen;
 import com.zhaniya.finalproject.ui.minigames.MiniGameSelectionScreen;
 import com.zhaniya.finalproject.ui.managers.KitchenScreen;
 import com.zhaniya.finalproject.model.pet.Pet;
 import com.zhaniya.finalproject.ui.managers.CleanScreen;
+
 
 
 public class GameScreen extends ScreenAdapter {
@@ -66,14 +68,14 @@ public class GameScreen extends ScreenAdapter {
         commentLabel = new Label("Я счастлив!", labelStyle);
         commentLabel.setFontScale(1.2f);
 
+        // Загрузка текстур кнопок
         Texture feedTexture = new Texture(Gdx.files.internal("ui/buttons/feed_button.png"));
         Texture playTexture = new Texture(Gdx.files.internal("ui/buttons/play_button.png"));
         Texture sleepTexture = new Texture(Gdx.files.internal("ui/buttons/sleep_button.png"));
         Texture cleanTexture = new Texture(Gdx.files.internal("ui/buttons/clean_button.png"));
 
-        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
-        buttonStyle.font = font;
 
+        // Создание стилей для каждой кнопки отдельно
         TextButton.TextButtonStyle feedButtonStyle = new TextButton.TextButtonStyle();
         feedButtonStyle.font = font;
         feedButtonStyle.up = new Image(feedTexture).getDrawable();
@@ -90,11 +92,18 @@ public class GameScreen extends ScreenAdapter {
         cleanButtonStyle.font = font;
         cleanButtonStyle.up = new Image(cleanTexture).getDrawable();
 
+        TextButton.TextButtonStyle backButtonStyle = new TextButton.TextButtonStyle();
+        backButtonStyle.font = font;
+
+
+        // Создание кнопок с соответствующими стилями
         TextButton feedButton = new TextButton("", feedButtonStyle);
         TextButton playButton = new TextButton("", playButtonStyle);
         TextButton sleepButton = new TextButton("", sleepButtonStyle);
         TextButton cleanButton = new TextButton("", cleanButtonStyle);
+        TextButton backButton = new TextButton("", backButtonStyle);
 
+        // Логика кнопок
         cleanButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -114,11 +123,10 @@ public class GameScreen extends ScreenAdapter {
         playButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new MiniGameSelectionScreen(game, pet));
-                System.out.println("Переход на экран выбора мини-игр.");
+                game.setScreen(new MemoryGameScreen(game, pet));  // Переход на MemoryGameScreen
+                System.out.println("Запуск Memory Game");
             }
         });
-
         sleepButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -126,13 +134,23 @@ public class GameScreen extends ScreenAdapter {
             }
         });
 
+        backButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new GameScreen(game, pet));
+                System.out.println("Возврат на экран игры.");
+            }
+        });
+
+        // Добавление элементов на экран
         table.add(title).padBottom(10).row();
         table.add(energyLabel).padBottom(5).row();
         table.add(commentLabel).padBottom(20).row();
         table.add(feedButton).pad(5).width(100).height(50);
         table.add(playButton).pad(5).width(100).height(50);
         table.add(sleepButton).pad(5).width(100).height(50);
-        table.add(cleanButton).pad(5).width(100).height(50);
+        table.add(cleanButton).pad(5).width(100).height(50).row();
+        table.add(backButton).pad(5).width(100).height(50);
     }
 
     private void toggleSleep() {
@@ -145,15 +163,9 @@ public class GameScreen extends ScreenAdapter {
     private void updateStatus() {
         energyLabel.setText("Energy: " + pet.getEnergy());
 
-        if (pet.getEnergy() >= 50) {
-            commentLabel.setText("Я счастлив!");
-        } else if (pet.getEnergy() >= 20) {
-            commentLabel.setText("Я немного устал...");
-        } else if (pet.getEnergy() >= 10) {
-            commentLabel.setText("Я устал... Хочу спать!");
-        } else {
-            commentLabel.setText("Энергия на исходе!");
-            backgroundTexture = sleepTexture;
+        if (pet.getEnergy() <= 0) {
+            System.out.println("Игра окончена!");
+            game.setScreen(new GameScreen(game, pet));
         }
     }
 
@@ -179,3 +191,4 @@ public class GameScreen extends ScreenAdapter {
         stage.dispose();
     }
 }
+// ./gradlew lwjgl3:run
