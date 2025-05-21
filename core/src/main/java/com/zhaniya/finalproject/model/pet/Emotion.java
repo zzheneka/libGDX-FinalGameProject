@@ -4,5 +4,5 @@ public enum Emotion {
     HAPPY,
     ANGRY,
     SAD,
-    SLEEP
+    DIRTY, SLEEP
 }

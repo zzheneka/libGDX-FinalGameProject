@@ -27,6 +27,8 @@ public class AnimationManager {
 
         animations.put(Emotion.HAPPY, loadAnimation(basePath + "/happy"));
         animations.put(Emotion.SAD, loadAnimation(basePath + "/sad"));
+        animations.put(Emotion.SLEEP, loadAnimation(basePath + "/sleep"));
+        animations.put(Emotion.DIRTY, loadAnimation(basePath + "/dirty"));
     }
 
     private Animation<TextureRegion> loadAnimation(String path) {
@@ -44,11 +46,23 @@ public class AnimationManager {
         batch.draw(frame, 200, 50, 180, 180);
     }
 
-    // ✅ Добавляем метод для получения текущего кадра анимации
     public TextureRegion getCurrentFrame() {
         Emotion currentEmotion = pet.getState().getEmotion();
-        return animations.get(currentEmotion).getKeyFrame(stateTime, true);
+
+        // Заменяем ANGRY на SAD, если нет отдельной анимации
+        if (currentEmotion == Emotion.ANGRY) {
+            currentEmotion = Emotion.SAD;
+        }
+
+        Animation<TextureRegion> animation = animations.get(currentEmotion);
+        if (animation == null) {
+            System.err.println("Анимация не найдена для состояния: " + currentEmotion);
+            return animations.getOrDefault(Emotion.HAPPY, animations.values().iterator().next()).getKeyFrames()[0];
+        }
+
+        return animation.getKeyFrame(stateTime, true);
     }
+
 
     public void dispose() {
         animations.values().forEach(anim -> {

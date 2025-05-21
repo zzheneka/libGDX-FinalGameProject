@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.zhaniya.finalproject.model.pet.Pet;
 
 public class UIManager {
     private final Stage stage;
@@ -33,7 +34,8 @@ public class UIManager {
         cleanButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new CleanScreen(game));
+                Pet pet = null;
+                game.setScreen(new CleanScreen(game,pet));
                 System.out.println("Переход на экран чистки.");
             }
         });

@@ -55,14 +55,27 @@ public class Pet implements CloneablePet {
     }
 
     public void handleState() {
+        if (energy <= 0) {
+            System.out.println(name + " has no energy left!");
+            return;
+        }
+
         if (energy < 30 && !isInState(TiredState.class)) {
             setState(new TiredState(this));
             System.out.println(name + " is too tired and switches to Tired state.");
+            return;
         }
 
         if (health < 30 && !isInState(SickState.class)) {
             setState(new SickState(this));
             System.out.println(name + " got sick due to low health.");
+            return;
+        }
+
+        if (energy < 50 && !isInState(TiredState.class)) {
+            setState(new TiredState(this));
+            System.out.println(name + " is sad due to low energy.");
+            return;
         }
 
         if (state != null) {
@@ -221,7 +234,6 @@ public class Pet implements CloneablePet {
         return (System.currentTimeMillis() - lastFedTime) < 5000;
     }
 
-    // Добавленный метод для получения типа питомца
     public PetType getType() {
         return type;
     }

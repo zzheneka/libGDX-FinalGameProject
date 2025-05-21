@@ -65,7 +65,7 @@ public class GameScreen extends ScreenAdapter {
         energyLabel = new Label("Energy: " + pet.getEnergy(), labelStyle);
         energyLabel.setFontScale(1.2f);
 
-        commentLabel = new Label("Я счастлив!", labelStyle);
+        commentLabel = new Label("Dragon happy!", labelStyle);
         commentLabel.setFontScale(1.2f);
 
         // Загрузка текстур кнопок
@@ -107,7 +107,7 @@ public class GameScreen extends ScreenAdapter {
         cleanButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new CleanScreen(game));
+                game.setScreen(new CleanScreen(game,pet));
                 System.out.println("Переход на экран чистки.");
             }
         });
@@ -125,6 +125,8 @@ public class GameScreen extends ScreenAdapter {
             public void clicked(InputEvent event, float x, float y) {
                 game.setScreen(new MemoryGameScreen(game, pet));  // Переход на MemoryGameScreen
                 System.out.println("Запуск Memory Game");
+                pet.decreaseEnergy(10);
+                System.out.println("Текущая энергия после игры: " + pet.getEnergy());
             }
         });
         sleepButton.addListener(new ClickListener() {
@@ -154,16 +156,53 @@ public class GameScreen extends ScreenAdapter {
     }
 
     private void toggleSleep() {
-        isSleeping = !isSleeping;
-        backgroundTexture = isSleeping ? sleepTexture : playgroundTexture;
-        petTexture = new Texture(Gdx.files.internal("dragon/happy/frame" + (isSleeping ? "3" : "1") + ".png"));
-        System.out.println("Питомец " + (isSleeping ? "уснул" : "проснулся") + "!");
+        if (pet.getEnergy() < 70) {
+            pet.increaseEnergy(20); // Вместо 30 — теперь 20
+            backgroundTexture = sleepTexture;
+            petTexture = new Texture(Gdx.files.internal("dragon/happy/frame3.png"));
+            commentLabel.setText("Zzz...");
+            System.out.println("Dragon is sleeping. Энергия: " + pet.getEnergy());
+        } else {
+            commentLabel.setText("Drako is too energetic to sleep.");
+            System.out.println("Not sleepy — energy too high!");
+        }
     }
 
     private void updateStatus() {
         energyLabel.setText("Energy: " + pet.getEnergy());
 
-        if (pet.getEnergy() <= 0) {
+        int energy = pet.getEnergy();
+
+        // 1. Если энергия 10 — питомец засыпает, только фон меняется
+        if (energy == 10) {
+            backgroundTexture = sleepTexture;
+            commentLabel.setText("Im tired");
+            isSleeping = true;
+        }
+        // 2. Энергия 30 — питомец грустный
+        else if (energy == 30) {
+            petTexture = new Texture(Gdx.files.internal("dragon/sad/frame1.png"));
+            commentLabel.setText("Im sad..");
+            backgroundTexture = playgroundTexture;
+            isSleeping = false;
+        }
+        // 3. Энергия 40 — питомец грязный
+        else if (energy == 40) {
+            petTexture = new Texture(Gdx.files.internal("dragon/dirty/frame1.png"));
+            commentLabel.setText("Im dirty...");
+            backgroundTexture = playgroundTexture;
+            isSleeping = false;
+        }
+        // 4. Все остальное — обычный счастливый режим
+        else {
+            petTexture = new Texture(Gdx.files.internal("dragon/happy/frame1.png"));
+            commentLabel.setText("Im happy!");
+            backgroundTexture = playgroundTexture;
+            isSleeping = false;
+        }
+
+        // Если энергия упала до 0 — перезапуск
+        if (energy <= 0) {
             System.out.println("Игра окончена!");
             game.setScreen(new GameScreen(game, pet));
         }
